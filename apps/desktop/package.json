@@ -1,0 +1,30 @@
+{
+  "name": "@cansche/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@cansche/api": "workspace:*",
+    "@cansche/application": "workspace:*",
+    "@cansche/domain": "workspace:*",
+    "@cansche/engine": "workspace:*",
+    "@cansche/platform": "workspace:*",
+    "@cansche/repositories": "workspace:*",
+    "@cansche/selection": "workspace:*",
+    "@cansche/shared": "workspace:*",
+    "@cansche/storage": "workspace:*",
+    "@tauri-apps/api": "^2.0.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.14"
+  }
+}

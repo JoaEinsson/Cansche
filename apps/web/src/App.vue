@@ -81,7 +81,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { CalendarEngine, ApplyPresetCommand, ClearCellsCommand, PasteCommand } from '@cansche/engine';
 import { CalendarAPI } from '@cansche/api';
-import { IndexedDBAdapter } from '@cansche/storage';
+import { StorageFactory } from '@cansche/storage';
+import { WebPlatformAdapter } from '@cansche/platform';
+import { DefaultCalendarRepository } from '@cansche/repositories';
+import { ApplicationImportExportService, NotificationService } from '@cansche/application';
 import { ISODate, getDaysBetween, toISODate } from '@cansche/shared';
 import { Preset, Calendar, ClipboardData } from '@cansche/domain';
 
@@ -94,7 +97,12 @@ import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
 
 const engine = new CalendarEngine();
 const api = new CalendarAPI(engine);
-const storage = new IndexedDBAdapter();
+
+const platform = new WebPlatformAdapter();
+const storageAdapter = StorageFactory.createAdapter('indexeddb');
+const repository = new DefaultCalendarRepository(storageAdapter);
+const appImportExport = new ApplicationImportExportService(repository, platform);
+const notificationService = new NotificationService(platform);
 
 const currentDate = ref(new Date());
 const selectedDates = ref<ISODate[]>([]);
@@ -182,28 +190,18 @@ function handleDeleteCalendar(id: string) {
   }
 }
 
-function handleExportCalendar(id: string) {
-  const jsonStr = engine.exportCalendar(id);
+async function handleExportCalendar(id: string) {
   const targetCal = allCalendars.value.find((c) => c.id === id);
-  const fileName = `${(targetCal?.name || 'calendar').toLowerCase().replace(/\s+/g, '-')}.cansche.json`;
-  downloadFile(jsonStr, fileName);
+  if (targetCal) {
+    await appImportExport.exportCalendarFile(targetCal);
+  }
 }
 
-function handleExportWorkspace() {
-  const jsonStr = engine.exportWorkspace();
+async function handleExportWorkspace() {
   const ws = api.query('workspace');
-  const fileName = `${(ws?.name || 'workspace').toLowerCase().replace(/\s+/g, '-')}.cansche.json`;
-  downloadFile(jsonStr, fileName);
-}
-
-function downloadFile(content: string, fileName: string) {
-  const blob = new Blob([content], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  URL.revokeObjectURL(url);
+  if (ws) {
+    await appImportExport.exportWorkspaceFile(ws);
+  }
 }
 
 function handleImportFile(jsonString: string) {
@@ -283,6 +281,16 @@ function handleDeletePreset(presetId: string) {
 function handleApplyPreset(presetId: string) {
   if (selectedDates.value.length === 0) return;
   api.execute(new ApplyPresetCommand(selectedDates.value, presetId));
+  
+  const targetPreset = presets.value.find(p => p.id === presetId);
+  if (targetPreset) {
+    notificationService.notifyPresetEvent(
+      targetPreset.name,
+      targetPreset.schedule?.startTime,
+      targetPreset.content?.location
+    );
+  }
+
   syncState();
   autoSave();
 }
@@ -329,13 +337,13 @@ function handleRedo() {
 
 async function autoSave() {
   try {
-    await storage.saveWorkspace(api.query('workspace'));
+    await repository.saveWorkspace(api.query('workspace'));
   } catch (err) {
     console.error('AutoSave failed:', err);
   }
 }
 
-// Keyboard shortcuts
+// Full Desktop Keyboard Shortcuts (Phase 5)
 function handleKeyDown(event: KeyboardEvent) {
   if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
     return;
@@ -343,7 +351,10 @@ function handleKeyDown(event: KeyboardEvent) {
 
   const isCtrl = event.ctrlKey || event.metaKey;
 
-  if (isCtrl && event.key.toLowerCase() === 'z') {
+  if (isCtrl && event.shiftKey && event.key.toLowerCase() === 'z') {
+    event.preventDefault();
+    handleRedo();
+  } else if (isCtrl && event.key.toLowerCase() === 'z') {
     event.preventDefault();
     handleUndo();
   } else if (isCtrl && event.key.toLowerCase() === 'y') {
@@ -355,6 +366,12 @@ function handleKeyDown(event: KeyboardEvent) {
   } else if (isCtrl && event.key.toLowerCase() === 'v') {
     event.preventDefault();
     handlePaste();
+  } else if (isCtrl && event.key.toLowerCase() === 's') {
+    event.preventDefault();
+    handleExportWorkspace();
+  } else if (isCtrl && event.key.toLowerCase() === 'n') {
+    event.preventDefault();
+    handleOpenCreateModal();
   } else if (event.key === 'Delete' || event.key === 'Backspace') {
     event.preventDefault();
     handleClearCells();
@@ -367,7 +384,7 @@ function handleKeyDown(event: KeyboardEvent) {
 onMounted(async () => {
   window.addEventListener('keydown', handleKeyDown);
 
-  const saved = await storage.loadWorkspace();
+  const saved = await repository.getWorkspace();
   if (saved && saved.calendars && (saved.editingCalendarId || (saved as any).activeCalendarId)) {
     engine.setWorkspace(saved);
   }

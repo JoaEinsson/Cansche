@@ -12,6 +12,9 @@ export default defineConfig({
       '@cansche/engine': path.resolve(__dirname, '../../packages/engine/src/index.ts'),
       '@cansche/api': path.resolve(__dirname, '../../packages/api/src/index.ts'),
       '@cansche/storage': path.resolve(__dirname, '../../packages/storage/src/index.ts'),
+      '@cansche/platform': path.resolve(__dirname, '../../packages/platform/src/index.ts'),
+      '@cansche/repositories': path.resolve(__dirname, '../../packages/repositories/src/index.ts'),
+      '@cansche/application': path.resolve(__dirname, '../../packages/application/src/index.ts'),
     },
   },
 });
