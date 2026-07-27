@@ -1,0 +1,12 @@
+{
+  "name": "@cansche/storage",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "private": true,
+  "dependencies": {
+    "@cansche/domain": "workspace:*",
+    "dexie": "^3.2.4"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@cansche/shared": ["../shared/src/index.ts"],
+      "@cansche/domain": ["../domain/src/index.ts"],
+      "@cansche/selection": ["../selection/src/index.ts"],
+      "@cansche/engine": ["../engine/src/index.ts"],
+      "@cansche/api": ["../api/src/index.ts"],
+      "@cansche/storage": ["../storage/src/index.ts"],
+      "@cansche/platform": ["../platform/src/index.ts"],
+      "@cansche/repositories": ["../repositories/src/index.ts"],
+      "@cansche/application": ["../application/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
