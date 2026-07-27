@@ -50,5 +50,3 @@ export class WebPlatformAdapter implements PlatformAdapter {
     }
   }
 }
-
-export * from './TauriDesktopPlatformAdapter';

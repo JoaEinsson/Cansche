@@ -1,5 +1,5 @@
-import { Workspace, Calendar, ISODate, ClipboardData, Preset, PresetInstance } from '@cansche/domain';
-import { generateId } from '@cansche/shared';
+import { Workspace, Calendar, ClipboardData, Preset, PresetInstance } from '@cansche/domain';
+import { generateId, ISODate } from '@cansche/shared';
 import { SelectionService } from '@cansche/selection';
 import { EngineContext } from './EngineContext';
 import { Command } from './Command';

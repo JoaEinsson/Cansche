@@ -51,8 +51,7 @@ export class SQLiteStorageAdapter implements StorageAdapter {
     this.memoryCache = JSON.parse(JSON.stringify(workspace));
     try {
       if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api');
-        await invoke('save_workspace_sqlite', {
+        await (window as any).__TAURI__.invoke('save_workspace_sqlite', {
           id: workspace.id,
           name: workspace.name,
           data: JSON.stringify(workspace),
@@ -66,8 +65,7 @@ export class SQLiteStorageAdapter implements StorageAdapter {
   public async loadWorkspace(): Promise<Workspace | null> {
     try {
       if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api');
-        const jsonStr = await invoke<string | null>('load_workspace_sqlite');
+        const jsonStr = await (window as any).__TAURI__.invoke('load_workspace_sqlite');
         if (jsonStr) {
           const parsed = JSON.parse(jsonStr) as Workspace;
           this.memoryCache = parsed;
@@ -84,8 +82,7 @@ export class SQLiteStorageAdapter implements StorageAdapter {
     this.memoryCache = null;
     try {
       if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api');
-        await invoke('delete_workspace_sqlite', { id });
+        await (window as any).__TAURI__.invoke('delete_workspace_sqlite', { id });
       }
     } catch {
       // Fallback
