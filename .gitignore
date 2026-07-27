@@ -2,15 +2,15 @@
 node_modules/
 .pnpm-store/
 
-# Build outputs
-dist/
-build/
-out/
+# Build outputs (Monorepo recursive)
+**/dist/
+**/build/
+**/out/
 *.tsbuildinfo
 
-# Tauri & Rust build artifacts
-src-tauri/target/
+# Tauri & Rust build artifacts (Monorepo recursive)
 **/src-tauri/target/
+**/target/
 
 # Cache & Temp directories
 .cache/
