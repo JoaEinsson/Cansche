@@ -1,0 +1,264 @@
+<template>
+  <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 select-none">
+    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-md shadow-2xl shadow-black/90 space-y-4 text-xs text-[#d0d6e0]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-[#23252a] pb-4">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-lg leading-none p-1.5 rounded-[6px] bg-[#161718] border border-[#23252a]">{{ form.emoji || '📌' }}</span>
+          <div>
+            <h3 class="font-medium text-sm text-white tracking-tight">
+              {{ isEditing ? 'Editar Template de Preset' : 'Criar Template de Preset' }}
+            </h3>
+            <p class="text-[11px] text-[#8a8f98]">Configure as propriedades reutilizáveis deste componente</p>
+          </div>
+        </div>
+        <button
+          @click="$emit('close')"
+          class="text-[#8a8f98] hover:text-white p-1 rounded-[6px] hover:bg-[#161718] transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form Grid -->
+      <div class="space-y-3.5">
+        <!-- Name & Category -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Nome do Template *</label>
+            <input
+              v-model="form.name"
+              type="text"
+              placeholder="ex: Aula Faculdade, Trabalho Remoto"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Categoria</label>
+            <input
+              v-model="form.category"
+              type="text"
+              placeholder="ex: Estudo"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+        </div>
+
+        <!-- Emoji & Color -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Emoji / Ícone</label>
+            <input
+              v-model="form.emoji"
+              type="text"
+              maxLength="2"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor da Badge</label>
+            <input
+              v-model="form.color"
+              type="color"
+              class="w-full h-9 bg-[#08090a] border border-[#23252a] rounded-[6px] p-1 cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <!-- Time Range & Location -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Início</label>
+            <input
+              v-model="form.startTime"
+              type="time"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Término</label>
+            <input
+              v-model="form.endTime"
+              type="time"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+          <div>
+            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Local</label>
+            <input
+              v-model="form.location"
+              type="text"
+              placeholder="ex: Campus"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+        </div>
+
+        <!-- Checklist Template -->
+        <div>
+          <label class="text-[#d0d6e0] font-medium block mb-1 flex items-center justify-between text-[11px]">
+            <span>Checklist Padrão (Tarefas)</span>
+            <button @click="addChecklistItem" type="button" class="text-[11px] text-[#5e6ad2] hover:underline font-medium">+ Adicionar Item</button>
+          </label>
+          
+          <div class="space-y-1.5 max-h-24 overflow-y-auto pr-1">
+            <div
+              v-for="(item, index) in form.checklistTemplate"
+              :key="index"
+              class="flex items-center space-x-2"
+            >
+              <input
+                v-model="form.checklistTemplate[index]"
+                type="text"
+                placeholder="ex: Revisar conteúdo da aula"
+                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              />
+              <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-red-400">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes / Description -->
+        <div>
+          <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Observações / Descrição</label>
+          <textarea
+            v-model="form.description"
+            rows="2"
+            placeholder="Instruções padrão para este template..."
+            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-[#5e6ad2] resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Actions Footer -->
+      <div class="flex justify-end space-x-2.5 pt-3 border-t border-[#23252a]">
+        <button
+          @click="$emit('close')"
+          class="bg-[#23252a] hover:bg-[#383b3f] text-white font-medium text-xs px-4 py-2 rounded-[6px] border border-[#383b3f] transition-colors cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="save"
+          class="bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-md shadow-[#5e6ad2]/20 cursor-pointer"
+        >
+          {{ isEditing ? 'Salvar Alterações' : 'Criar Template' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { Preset } from '@cansche/domain';
+
+const props = defineProps<{
+  isOpen: boolean;
+  initialPreset?: Preset | null;
+}>();
+
+const emit = defineEmits(['close', 'save']);
+
+const isEditing = ref(false);
+const form = ref<{
+  id?: string;
+  name: string;
+  emoji: string;
+  color: string;
+  category: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
+  checklistTemplate: string[];
+}>({
+  name: '',
+  emoji: '📚',
+  color: '#5e6ad2',
+  category: '',
+  startTime: '',
+  endTime: '',
+  location: '',
+  description: '',
+  checklistTemplate: [],
+});
+
+watch(
+  () => props.initialPreset,
+  (preset) => {
+    if (preset) {
+      isEditing.value = true;
+      form.value = {
+        id: preset.id,
+        name: preset.name || '',
+        emoji: preset.emoji || '📚',
+        color: preset.color || '#5e6ad2',
+        category: preset.metadata?.category || preset.category || '',
+        startTime: preset.schedule?.startTime || preset.startTime || '',
+        endTime: preset.schedule?.endTime || preset.endTime || '',
+        location: preset.content?.location || preset.location || '',
+        description: preset.content?.description || preset.description || '',
+        checklistTemplate: preset.content?.checklistTemplate
+          ? [...preset.content.checklistTemplate]
+          : preset.checklist
+          ? [...preset.checklist]
+          : [],
+      };
+    } else {
+      isEditing.value = false;
+      form.value = {
+        name: '',
+        emoji: '📚',
+        color: '#5e6ad2',
+        category: '',
+        startTime: '',
+        endTime: '',
+        location: '',
+        description: '',
+        checklistTemplate: [],
+      };
+    }
+  },
+  { immediate: true }
+);
+
+function addChecklistItem() {
+  form.value.checklistTemplate.push('');
+}
+
+function removeChecklistItem(index: number) {
+  form.value.checklistTemplate.splice(index, 1);
+}
+
+function save() {
+  if (!form.value.name.trim()) return;
+
+  const presetData: Preset = {
+    id: form.value.id || '',
+    name: form.value.name.trim(),
+    emoji: form.value.emoji || '📚',
+    color: form.value.color || '#5e6ad2',
+    schedule: {
+      startTime: form.value.startTime || undefined,
+      endTime: form.value.endTime || undefined,
+    },
+    metadata: {
+      category: form.value.category || undefined,
+    },
+    content: {
+      location: form.value.location || undefined,
+      description: form.value.description || undefined,
+      checklistTemplate: form.value.checklistTemplate.filter((i) => i.trim() !== ''),
+    },
+  };
+
+  emit('save', presetData);
+}
+</script>
