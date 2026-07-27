@@ -9,7 +9,7 @@ node_modules/
 *.tsbuildinfo
 
 # Tauri & Rust build artifacts (Monorepo recursive)
-**/src-tauri/
+**/src-tauri/target/
 **/target/
 
 # Cache & Temp directories
