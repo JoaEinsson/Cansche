@@ -97,8 +97,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
-import { Calendar, Model, CalendarEvent, ClipboardData } from '@cansche/domain';
-import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator } from '@cansche/engine';
+import { Calendar, Workspace, Model, CalendarEvent, ClipboardData } from '@cansche/domain';
+import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator, ImportExportService } from '@cansche/engine';
 import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
 import { DesktopPlatformAdapter } from '@cansche/platform';
@@ -497,9 +497,26 @@ async function handleExportWorkspace() {
 }
 
 async function handleImportFile(content: string) {
-  const res = engine.exportWorkspace(); // test
-  syncState();
-  autoSave();
+  try {
+    const imported = ImportExportService.importFile(content);
+    if (imported) {
+      if (imported.type === 'workspace') {
+        engine.setWorkspace(imported.data as Workspace);
+      } else if (imported.type === 'calendar') {
+        const cal = imported.data as Calendar;
+        const ws = engine.getWorkspace();
+        ws.calendars[cal.id] = cal;
+        ws.editingCalendarId = cal.id;
+        engine.setWorkspace(ws);
+      }
+      syncState();
+      await autoSave();
+      notificationService.notify('Importação Concluída', 'Arquivo .cansche carregado com sucesso!');
+    }
+  } catch (err) {
+    console.error('Failed to import file:', err);
+    notificationService.notify('Erro ao Importar', 'Formato de arquivo .cansche inválido.');
+  }
 }
 
 function handlePointerMove(event: PointerEvent) {

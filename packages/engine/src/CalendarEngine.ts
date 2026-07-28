@@ -108,14 +108,12 @@ export class CalendarEngine implements EngineContext {
     const source = this.workspace.calendars[calendarId];
     if (!source) return null;
 
-    const newId = `cal-${Date.now()}`;
-    const copy: Calendar = JSON.parse(JSON.stringify(source));
-    copy.id = newId;
+    const copy = ImportExportService.deepCloneCalendar(source);
     copy.name = `${source.name} (Cópia)`;
     copy.order = Object.keys(this.workspace.calendars).length;
 
-    this.workspace.calendars[newId] = copy;
-    this.workspace.editingCalendarId = newId;
+    this.workspace.calendars[copy.id] = copy;
+    this.workspace.editingCalendarId = copy.id;
     this.onStateChanged.notify(this.workspace);
     return copy;
   }
