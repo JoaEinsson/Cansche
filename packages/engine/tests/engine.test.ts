@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CalendarEngine } from '../src/CalendarEngine';
-import { ApplyPresetCommand } from '../src/commands/ApplyPresetCommand';
+import { ApplyModelCommand } from '../src/commands/ApplyModelCommand';
 import { ImportExportService } from '../src/ImportExportService';
 import { CalendarAPI } from '@cansche/api';
 
@@ -25,24 +25,24 @@ describe('Workspace Manager, Layer Composition & CanscheFile Schema', () => {
     expect(api.query('editingCalendarId')).toBe(calFaculty.id);
   });
 
-  it('should deep clone calendar without sharing preset or cell IDs', () => {
-    const workPreset = engine.addPreset({
+  it('should deep clone calendar without sharing model or event IDs', () => {
+    const workModel = engine.addModel({
       name: 'Aula de Cálculo',
       emoji: '📚',
       color: '#5e6ad2',
     });
 
-    api.execute(new ApplyPresetCommand(['2026-08-10'], workPreset.id));
+    api.execute(new ApplyModelCommand(['2026-08-10'], workModel.id));
     const activeCal = engine.getActiveCalendar();
 
     const duplicated = engine.duplicateCalendar(activeCal.id);
     expect(duplicated.id).not.toBe(activeCal.id);
 
-    const dupPresetId = Object.keys(duplicated.presets)[0];
-    expect(dupPresetId).not.toBe(workPreset.id);
+    const dupModelId = Object.keys(duplicated.models)[0];
+    expect(dupModelId).not.toBe(workModel.id);
 
-    const dupCellInst = duplicated.cells['2026-08-10'].presetInstances[0];
-    expect(dupCellInst.presetId).toBe(dupPresetId);
+    const dupEvt = Object.values(duplicated.events)[0];
+    expect(dupEvt.modelId).toBe(dupModelId);
   });
 
   it('should export and import CanscheFile for both calendar and workspace', () => {

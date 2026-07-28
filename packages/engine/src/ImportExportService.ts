@@ -1,4 +1,4 @@
-import { Calendar, Workspace, CanscheFile, Preset, CellMap } from '@cansche/domain';
+import { Calendar, Workspace, CanscheFile, Model, CalendarEvent } from '@cansche/domain';
 import { generateId } from '@cansche/shared';
 
 export class ImportExportService {
@@ -40,7 +40,6 @@ export class ImportExportService {
       throw new Error('Formato de arquivo JSON inválido.');
     }
 
-    // Support both standardized CanscheFile wrapper and legacy plain json
     const fileType = parsed.format === 'cansche' ? parsed.type : parsed.calendar ? 'calendar' : 'workspace';
     const rawData = parsed.format === 'cansche' ? parsed.data : parsed.calendar || parsed;
 
@@ -55,29 +54,47 @@ export class ImportExportService {
 
   public static deepCloneCalendar(source: Calendar): Calendar {
     const newCalendarId = generateId('cal');
-    const presetIdMap: Record<string, string> = {};
-    const newPresets: Record<string, Preset> = {};
+    const modelIdMap: Record<string, string> = {};
+    const newModels: Record<string, Model> = {};
 
-    for (const oldPreset of Object.values(source.presets || {})) {
-      const newPresetId = generateId('preset');
-      presetIdMap[oldPreset.id] = newPresetId;
-      newPresets[newPresetId] = {
-        ...JSON.parse(JSON.stringify(oldPreset)),
-        id: newPresetId,
+    const rawModels = source.models || (source as any).presets || {};
+    for (const oldModel of Object.values(rawModels)) {
+      const newModelId = generateId('model');
+      modelIdMap[(oldModel as any).id] = newModelId;
+      newModels[newModelId] = {
+        ...JSON.parse(JSON.stringify(oldModel)),
+        id: newModelId,
       };
     }
 
-    const newCells: CellMap = {};
-    for (const [date, cell] of Object.entries(source.cells || {})) {
-      if (cell && cell.presetInstances) {
-        newCells[date] = {
-          date,
-          presetInstances: cell.presetInstances.map((inst) => ({
-            ...JSON.parse(JSON.stringify(inst)),
-            id: generateId('inst'),
-            presetId: presetIdMap[inst.presetId] || inst.presetId,
-          })),
+    const newEvents: Record<string, CalendarEvent> = {};
+    const rawEvents = source.events || {};
+
+    if (Object.keys(rawEvents).length > 0) {
+      for (const oldEvt of Object.values(rawEvents)) {
+        const newEvtId = generateId('evt');
+        newEvents[newEvtId] = {
+          ...JSON.parse(JSON.stringify(oldEvt)),
+          id: newEvtId,
+          modelId: oldEvt.modelId ? modelIdMap[oldEvt.modelId] || oldEvt.modelId : undefined,
         };
+      }
+    } else if ((source as any).cells) {
+      for (const [date, cell] of Object.entries((source as any).cells as Record<string, any>)) {
+        if (cell && cell.presetInstances) {
+          for (const inst of cell.presetInstances) {
+            const newEvtId = generateId('evt');
+            newEvents[newEvtId] = {
+              id: newEvtId,
+              date,
+              modelId: modelIdMap[inst.presetId] || inst.presetId,
+              source: inst.source || 'model',
+              overrides: inst.overrides ? { ...inst.overrides } : undefined,
+              checklistState: inst.checklistState || [],
+              createdAt: inst.createdAt || new Date().toISOString(),
+            };
+          }
+        }
       }
     }
 
@@ -88,8 +105,8 @@ export class ImportExportService {
       color: source.color || '#5e6ad2',
       order: source.order ?? 0,
       visible: true,
-      presets: newPresets,
-      cells: newCells,
+      models: newModels,
+      events: newEvents,
     };
   }
 

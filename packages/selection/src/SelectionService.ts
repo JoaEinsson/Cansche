@@ -1,5 +1,5 @@
 import { ISODate, getDaysBetween, getDayOfWeek, isWeekend } from '@cansche/shared';
-import { CellMap } from '@cansche/domain';
+import { CalendarEvent } from '@cansche/domain';
 
 export class SelectionService {
   private selectedDatesSet: Set<ISODate> = new Set();
@@ -69,11 +69,18 @@ export class SelectionService {
     }
   }
 
-  public selectByPreset(cells: CellMap, presetId: string): void {
-    for (const [date, cell] of Object.entries(cells)) {
-      if (cell.presetInstances && cell.presetInstances.some((inst) => inst.presetId === presetId)) {
-        this.selectedDatesSet.add(date);
+  public selectByModel(events: Record<string, CalendarEvent>, modelId: string): void {
+    for (const evt of Object.values(events)) {
+      if (evt.modelId === modelId) {
+        this.selectedDatesSet.add(evt.date);
       }
+    }
+  }
+
+  // Alias for backward compatibility
+  public selectByPreset(events: any, modelId: string): void {
+    if (events && typeof events === 'object') {
+      this.selectByModel(events as Record<string, CalendarEvent>, modelId);
     }
   }
 }

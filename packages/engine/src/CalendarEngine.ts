@@ -1,4 +1,4 @@
-import { Workspace, Calendar, ClipboardData, Preset, PresetInstance } from '@cansche/domain';
+import { Workspace, Calendar, ClipboardData, Model, CalendarEvent } from '@cansche/domain';
 import { generateId, ISODate } from '@cansche/shared';
 import { SelectionService } from '@cansche/selection';
 import { EngineContext } from './EngineContext';
@@ -35,8 +35,8 @@ export class CalendarEngine implements EngineContext {
             color: '#5e6ad2',
             order: 0,
             visible: true,
-            presets: {},
-            cells: {},
+            models: {},
+            events: {},
           },
         },
       };
@@ -49,12 +49,13 @@ export class CalendarEngine implements EngineContext {
       ? ws.activeCalendarIds
       : Object.values(ws.calendars).filter(c => c.visible).map(c => c.id);
 
-    // Ensure all calendars have an order property
     let idx = 0;
     for (const cal of Object.values(ws.calendars)) {
       if (cal.order === undefined) {
         cal.order = idx++;
       }
+      if (!cal.models) cal.models = (cal as any).presets || {};
+      if (!cal.events) cal.events = {};
     }
 
     return {
@@ -99,8 +100,8 @@ export class CalendarEngine implements EngineContext {
       color,
       order: newOrder,
       visible: true,
-      presets: {},
-      cells: {},
+      models: {},
+      events: {},
     };
     this.workspace.calendars[id] = newCal;
     this.workspace.editingCalendarId = id;
@@ -204,26 +205,26 @@ export class CalendarEngine implements EngineContext {
   }
 
   // EngineContext Implementation
-  public setCellPresetInstances(date: ISODate, instances: PresetInstance[]): void {
+  public setEventsForDate(date: ISODate, events: CalendarEvent[]): void {
     const calendar = this.getActiveCalendar();
-    if (instances.length === 0) {
-      delete calendar.cells[date];
-    } else {
-      calendar.cells[date] = {
-        date,
-        presetInstances: [...instances],
-      };
+    if (!calendar.events) calendar.events = {};
+
+    for (const [id, evt] of Object.entries(calendar.events)) {
+      if (evt.date === date) {
+        delete calendar.events[id];
+      }
+    }
+
+    for (const evt of events) {
+      calendar.events[evt.id] = evt;
     }
   }
 
-  public toggleChecklistItem(date: ISODate, instanceId: string, itemId: string): void {
+  public toggleChecklistItem(eventId: string, itemId: string): void {
     const calendar = this.getActiveCalendar();
-    const cell = calendar.cells[date];
-    if (!cell || !cell.presetInstances) return;
-
-    const instance = cell.presetInstances.find((i) => i.id === instanceId);
-    if (instance && instance.checklistState) {
-      const item = instance.checklistState.find((c) => c.id === itemId);
+    const event = calendar.events ? calendar.events[eventId] : undefined;
+    if (event && event.checklistState) {
+      const item = event.checklistState.find((c) => c.id === itemId);
       if (item) {
         item.completed = !item.completed;
         this.onStateChanged.notify(this.workspace);
@@ -260,38 +261,50 @@ export class CalendarEngine implements EngineContext {
     return cmd;
   }
 
-  public addPreset(preset: Omit<Preset, 'id'>): Preset {
-    const newPreset: Preset = {
-      ...preset,
-      id: generateId('preset'),
+  public addModel(model: Omit<Model, 'id'>): Model {
+    const newModel: Model = {
+      ...model,
+      id: generateId('model'),
     };
     const calendar = this.getActiveCalendar();
-    calendar.presets[newPreset.id] = newPreset;
+    console.log('[DEBUG 3 Engine] addModel ANTES:', Object.keys(calendar.models || {}));
+    if (!calendar.models) calendar.models = {};
+    calendar.models[newModel.id] = newModel;
+    console.log('[DEBUG 3 Engine] addModel DEPOIS:', Object.keys(calendar.models));
     this.onStateChanged.notify(this.workspace);
-    return newPreset;
+    return newModel;
   }
 
-  public updatePreset(preset: Preset): void {
+  public updateModel(model: Model): void {
     const calendar = this.getActiveCalendar();
-    if (calendar.presets[preset.id]) {
-      calendar.presets[preset.id] = { ...preset };
+    if (calendar.models && calendar.models[model.id]) {
+      calendar.models[model.id] = { ...model };
       this.onStateChanged.notify(this.workspace);
     }
   }
 
-  public deletePreset(presetId: string): void {
+  public deleteModel(modelId: string): void {
     const calendar = this.getActiveCalendar();
-    if (calendar.presets[presetId]) {
-      delete calendar.presets[presetId];
-      for (const [date, cell] of Object.entries(calendar.cells)) {
-        if (cell.presetInstances && cell.presetInstances.some((inst) => inst.presetId === presetId)) {
-          this.setCellPresetInstances(
-            date,
-            cell.presetInstances.filter((inst) => inst.presetId !== presetId)
-          );
+    if (calendar.models && calendar.models[modelId]) {
+      delete calendar.models[modelId];
+      if (calendar.events) {
+        for (const [evtId, evt] of Object.entries(calendar.events)) {
+          if (evt.modelId === modelId) {
+            delete calendar.events[evtId];
+          }
         }
       }
       this.onStateChanged.notify(this.workspace);
     }
+  }
+
+  public addPreset(model: Omit<Model, 'id'>): Model {
+    return this.addModel(model);
+  }
+  public updatePreset(model: Model): void {
+    this.updateModel(model);
+  }
+  public deletePreset(modelId: string): void {
+    this.deleteModel(modelId);
   }
 }

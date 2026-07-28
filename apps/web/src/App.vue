@@ -14,19 +14,19 @@
 
     <!-- Main Workspace Layout -->
     <div class="flex-1 flex overflow-hidden relative">
-      <!-- Left Sidebar: Layers & Rich Presets Palette -->
-      <PresetPalette
+      <!-- Left Sidebar: Layers & Rich Models Library -->
+      <ModelLibrary
         :calendars="allCalendars"
         :editing-calendar-id="editingCalendarId"
         :active-calendar-ids="activeCalendarIds"
-        :presets="presets"
+        :models="models"
         @select-editing-calendar="handleSelectEditingCalendar"
         @toggle-layer-visibility="handleToggleLayerVisibility"
         @open-workspace-manager="isWorkspaceManagerOpen = true"
-        @apply-preset="handleApplyPreset"
+        @apply-model="handleApplyModel"
         @open-create-modal="handleOpenCreateModal"
-        @edit-preset="handleEditPreset"
-        @delete-preset="handleDeletePreset"
+        @edit-model="handleEditModel"
+        @delete-model="handleDeleteModel"
       />
 
       <!-- Center: Calendar Grid View (Consolidates all visible layers) -->
@@ -52,12 +52,12 @@
       />
     </div>
 
-    <!-- Rich Preset Editor Modal -->
-    <PresetEditorModal
+    <!-- Rich Model Editor Modal -->
+    <ModelEditorModal
       :is-open="isModalOpen"
-      :initial-preset="editingPreset"
+      :initial-model="editingModel"
       @close="isModalOpen = false"
-      @save="handleSavePreset"
+      @save="handleSaveModel"
     />
 
     <!-- Workspace Manager & Import/Export Modal -->
@@ -79,20 +79,20 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { CalendarEngine, ApplyPresetCommand, ClearCellsCommand, PasteCommand } from '@cansche/engine';
+import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand } from '@cansche/engine';
 import { CalendarAPI } from '@cansche/api';
 import { StorageFactory } from '@cansche/storage';
 import { WebPlatformAdapter } from '@cansche/platform';
 import { DefaultCalendarRepository } from '@cansche/repositories';
 import { ApplicationImportExportService, NotificationService } from '@cansche/application';
 import { ISODate, getDaysBetween, toISODate } from '@cansche/shared';
-import { Preset, Calendar, ClipboardData } from '@cansche/domain';
+import { Model, Calendar, ClipboardData } from '@cansche/domain';
 
 import HeaderBar from './components/HeaderBar.vue';
-import PresetPalette from './components/PresetPalette.vue';
+import ModelLibrary from './components/ModelLibrary.vue';
 import CalendarGrid from './components/CalendarGrid.vue';
 import SmartSelectionToolbar from './components/SmartSelectionToolbar.vue';
-import PresetEditorModal from './components/PresetEditorModal.vue';
+import ModelEditorModal from './components/ModelEditorModal.vue';
 import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
 
 const engine = new CalendarEngine();
@@ -110,14 +110,14 @@ const allCalendars = ref<Calendar[]>([]);
 const visibleCalendars = ref<Calendar[]>([]);
 const editingCalendarId = ref<string>('');
 const activeCalendarIds = ref<string[]>([]);
-const presets = ref<Preset[]>([]);
+const models = ref<Model[]>([]);
 const clipboard = ref<ClipboardData | null>(null);
 const canUndo = ref(false);
 const canRedo = ref(false);
 
 const isModalOpen = ref(false);
 const isWorkspaceManagerOpen = ref(false);
-const editingPreset = ref<Preset | null>(null);
+const editingModel = ref<Model | null>(null);
 
 const monthNames = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -133,7 +133,8 @@ function syncState() {
   visibleCalendars.value = [...api.query('visibleCalendars')];
   editingCalendarId.value = api.query('editingCalendarId');
   activeCalendarIds.value = [...api.query('activeCalendarIds')];
-  presets.value = [...api.query('presets')];
+  models.value = [...api.query('models')];
+  console.log('[DEBUG 4 App] syncState() models.value atualizado:', models.value);
   selectedDates.value = [...api.query('selectedDates')];
   clipboard.value = api.query('clipboard');
   canUndo.value = api.query('canUndo');
@@ -250,44 +251,47 @@ function handleSelectWeekends() {
   syncState();
 }
 
-// Preset Modal & Actions
+// Model Modal & Actions
 function handleOpenCreateModal() {
-  editingPreset.value = null;
+  editingModel.value = null;
   isModalOpen.value = true;
 }
 
-function handleEditPreset(preset: Preset) {
-  editingPreset.value = preset;
+function handleEditModel(model: Model) {
+  editingModel.value = model;
   isModalOpen.value = true;
 }
 
-function handleSavePreset(presetData: Preset) {
-  if (presetData.id) {
-    engine.updatePreset(presetData);
+function handleSaveModel(modelData: Model) {
+  console.log('[DEBUG 2 App] handleSaveModel recebido:', modelData);
+  if (modelData.id) {
+    console.log('[DEBUG 2 App] Atualizando modelo existente:', modelData.id);
+    engine.updateModel(modelData);
   } else {
-    engine.addPreset(presetData);
+    console.log('[DEBUG 2 App] Adicionando novo modelo no Engine');
+    engine.addModel(modelData);
   }
   syncState();
   autoSave();
   isModalOpen.value = false;
 }
 
-function handleDeletePreset(presetId: string) {
-  engine.deletePreset(presetId);
+function handleDeleteModel(modelId: string) {
+  engine.deleteModel(modelId);
   syncState();
   autoSave();
 }
 
-function handleApplyPreset(presetId: string) {
+function handleApplyModel(modelId: string) {
   if (selectedDates.value.length === 0) return;
-  api.execute(new ApplyPresetCommand(selectedDates.value, presetId));
+  api.execute(new ApplyModelCommand(selectedDates.value, modelId));
   
-  const targetPreset = presets.value.find(p => p.id === presetId);
-  if (targetPreset) {
+  const targetModel = models.value.find(m => m.id === modelId);
+  if (targetModel) {
     notificationService.notifyPresetEvent(
-      targetPreset.name,
-      targetPreset.schedule?.startTime,
-      targetPreset.content?.location
+      targetModel.name,
+      targetModel.schedule?.startTime,
+      targetModel.content?.location
     );
   }
 
@@ -295,10 +299,13 @@ function handleApplyPreset(presetId: string) {
   autoSave();
 }
 
-function handleToggleChecklist(payload: { date: ISODate; instanceId: string; itemId: string }) {
-  engine.toggleChecklistItem(payload.date, payload.instanceId, payload.itemId);
-  syncState();
-  autoSave();
+function handleToggleChecklist(payload: { eventId?: string; instanceId?: string; itemId: string }) {
+  const targetId = payload.eventId || payload.instanceId;
+  if (targetId) {
+    engine.toggleChecklistItem(targetId, payload.itemId);
+    syncState();
+    autoSave();
+  }
 }
 
 function handleClearCells() {
@@ -343,7 +350,7 @@ async function autoSave() {
   }
 }
 
-// Full Desktop Keyboard Shortcuts (Phase 5)
+// Full Desktop Keyboard Shortcuts
 function handleKeyDown(event: KeyboardEvent) {
   if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
     return;
@@ -390,8 +397,8 @@ onMounted(async () => {
   }
 
   const activeCal = engine.getActiveCalendar();
-  if (Object.keys(activeCal.presets).length === 0) {
-    engine.addPreset({
+  if (!activeCal.models || Object.keys(activeCal.models).length === 0) {
+    engine.addModel({
       name: 'Aula Faculdade',
       emoji: '📚',
       color: '#5e6ad2',
@@ -404,7 +411,7 @@ onMounted(async () => {
       }
     });
 
-    engine.addPreset({
+    engine.addModel({
       name: 'Trabalho Remoto',
       emoji: '💼',
       color: '#3b82f6',
@@ -416,7 +423,7 @@ onMounted(async () => {
       }
     });
 
-    engine.addPreset({
+    engine.addModel({
       name: 'Treino Academia',
       emoji: '🏋️',
       color: '#10b981',

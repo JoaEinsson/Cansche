@@ -56,52 +56,52 @@
           <span v-if="day.isToday" class="w-1.5 h-1.5 rounded-full bg-cyan-400" title="Hoje"></span>
         </div>
 
-        <!-- Cell Preset Instances (Consolidated across visible layers) -->
+        <!-- Cell Events (Consolidated across visible layers) -->
         <div class="flex-1 flex flex-col gap-1 overflow-hidden justify-start">
           <div
-            v-for="inst in day.instances"
-            :key="inst.instance.id"
+            v-for="item in day.events"
+            :key="item.event.id"
             class="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center justify-between border truncate leading-tight shadow-sm"
             :style="{
-              backgroundColor: inst.preset.color + '25',
-              borderColor: inst.preset.color + '70',
+              backgroundColor: getEventColor(item) + '25',
+              borderColor: getEventColor(item) + '70',
               color: '#ffffff'
             }"
-            :title="getPresetTooltip(inst.preset, inst.instance, inst.calendarName)"
+            :title="getEventTooltip(item)"
           >
             <div class="flex items-center gap-1.5 truncate min-w-0">
               <!-- Calendar Layer Indicator Dot -->
               <span
                 class="w-1.5 h-1.5 rounded-full shrink-0"
-                :style="{ backgroundColor: inst.calendarColor }"
-                :title="'Camada: ' + inst.calendarName"
+                :style="{ backgroundColor: item.calendarColor }"
+                :title="'Camada: ' + item.calendarName"
               ></span>
-              <span class="text-[11px] shrink-0 leading-none">{{ inst.preset.emoji }}</span>
-              <span class="truncate leading-none font-sans text-white font-medium">{{ inst.preset.name }}</span>
+              <span class="text-[11px] shrink-0 leading-none">{{ getEventEmoji(item) }}</span>
+              <span class="truncate leading-none font-sans text-white font-medium">{{ getEventName(item) }}</span>
             </div>
 
             <!-- Optional time badge or checklist indicator -->
             <div class="flex items-center space-x-1 shrink-0 text-[9px] font-mono opacity-90 pl-1">
-              <span v-if="getPresetStartTime(inst.preset)" class="text-[9px] text-slate-300">
-                {{ getPresetStartTime(inst.preset) }}
+              <span v-if="getEventStartTime(item)" class="text-[9px] text-slate-300">
+                {{ getEventStartTime(item) }}
               </span>
 
               <button
-                v-if="inst.instance.checklistState && inst.instance.checklistState.length > 0"
-                @click.stop="toggleFirstChecklist(day.date, inst.instance)"
+                v-if="item.event.checklistState && item.event.checklistState.length > 0"
+                @click.stop="toggleFirstChecklist(item.event)"
                 class="text-[9px] font-mono hover:scale-110 transition-transform px-1 rounded bg-black/30"
-                :class="isAllCompleted(inst.instance.checklistState) ? 'text-emerald-400 font-bold' : 'text-indigo-300'"
+                :class="isAllCompleted(item.event.checklistState) ? 'text-emerald-400 font-bold' : 'text-indigo-300'"
                 title="Clique para alternar tarefa concluída neste dia"
               >
-                {{ getCompletedCount(inst.instance.checklistState) }}/{{ inst.instance.checklistState.length }} ☑
+                {{ getCompletedCount(item.event.checklistState) }}/{{ item.event.checklistState.length }} ☑
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Overflow Counter if many instances -->
-        <div v-if="day.instances.length > 3" class="text-[9px] font-mono text-linear-darkMuted text-right leading-none pt-0.5">
-          +{{ day.instances.length - 3 }}
+        <!-- Overflow Counter if many events -->
+        <div v-if="day.events.length > 3" class="text-[9px] font-mono text-linear-darkMuted text-right leading-none pt-0.5">
+          +{{ day.events.length - 3 }}
         </div>
       </div>
     </div>
@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
-import { Calendar, Preset, PresetInstance, ChecklistItem } from '@cansche/domain';
+import { Calendar, Model, CalendarEvent, ChecklistItem } from '@cansche/domain';
 
 const props = defineProps<{
   currentYear: number;
@@ -128,10 +128,6 @@ const isDragging = ref(false);
 const selectedSet = computed(() => new Set(props.selectedDates));
 const todayISO = toISODate(new Date());
 
-function getPresetStartTime(preset: Preset): string | undefined {
-  return preset.schedule?.startTime || (preset as any).startTime;
-}
-
 function getCompletedCount(checklist: ChecklistItem[]): number {
   return checklist.filter((c) => c.completed).length;
 }
@@ -140,67 +136,86 @@ function isAllCompleted(checklist: ChecklistItem[]): boolean {
   return checklist.length > 0 && checklist.every((c) => c.completed);
 }
 
-function toggleFirstChecklist(date: ISODate, instance: PresetInstance) {
-  if (instance.checklistState && instance.checklistState.length > 0) {
+function toggleFirstChecklist(event: CalendarEvent) {
+  if (event.checklistState && event.checklistState.length > 0) {
     emit('toggle-checklist', {
-      date,
-      instanceId: instance.id,
-      itemId: instance.checklistState[0].id,
+      eventId: event.id,
+      itemId: event.checklistState[0].id,
     });
   }
 }
 
-function getInstancesForDate(date: ISODate): Array<{ instance: PresetInstance; preset: Preset; calendarName: string; calendarColor: string }> {
-  const result: Array<{ instance: PresetInstance; preset: Preset; calendarName: string; calendarColor: string }> = [];
+interface EventViewItem {
+  event: CalendarEvent;
+  model?: Model;
+  calendarName: string;
+  calendarColor: string;
+}
+
+function getEventsForDate(date: ISODate): EventViewItem[] {
+  const result: EventViewItem[] = [];
 
   for (const cal of props.visibleCalendars || []) {
     if (!cal.visible) continue;
-    const cell = cal.cells[date];
-    if (!cell) continue;
 
-    let rawInstances: PresetInstance[] = [];
-    if (Array.isArray(cell.presetInstances)) {
-      rawInstances = cell.presetInstances;
-    } else if (Array.isArray((cell as any).presetIds)) {
-      rawInstances = ((cell as any).presetIds as string[]).map((id, idx) => ({
-        id: `${id}_${idx}`,
-        presetId: id,
-        source: 'preset',
-        checklistState: [],
-        createdAt: new Date().toISOString(),
-      }));
-    } else if ((cell as any).presetId) {
-      rawInstances = [{
-        id: (cell as any).presetId,
-        presetId: (cell as any).presetId,
-        source: 'preset',
-        checklistState: [],
-        createdAt: new Date().toISOString(),
-      }];
+    const eventsList: CalendarEvent[] = [];
+    if (cal.events) {
+      for (const evt of Object.values(cal.events)) {
+        if (evt.date === date) eventsList.push(evt);
+      }
+    } else if ((cal as any).cells && (cal as any).cells[date]) {
+      const cell = (cal as any).cells[date];
+      if (cell && cell.presetInstances) {
+        for (const inst of cell.presetInstances) {
+          eventsList.push({
+            id: inst.id,
+            date,
+            modelId: inst.presetId,
+            source: inst.source || 'model',
+            overrides: inst.overrides,
+            checklistState: inst.checklistState || [],
+            createdAt: inst.createdAt || new Date().toISOString(),
+          });
+        }
+      }
     }
 
-    for (const inst of rawInstances) {
-      const parentPreset = cal.presets[inst.presetId];
-      if (parentPreset) {
-        result.push({
-          instance: inst,
-          preset: parentPreset,
-          calendarName: cal.name,
-          calendarColor: cal.color || '#5e6ad2',
-        });
-      }
+    for (const evt of eventsList) {
+      const parentModel = evt.modelId ? (cal.models ? cal.models[evt.modelId] : (cal as any).presets?.[evt.modelId]) : undefined;
+      result.push({
+        event: evt,
+        model: parentModel,
+        calendarName: cal.name,
+        calendarColor: cal.color || '#5e6ad2',
+      });
     }
   }
 
   return result;
 }
 
-function getPresetTooltip(preset: Preset, instance: PresetInstance, calendarName: string): string {
-  const parts = [`[${calendarName}] ${preset.name}`];
-  const startTime = preset.schedule?.startTime || (preset as any).startTime;
-  const endTime = preset.schedule?.endTime || (preset as any).endTime || '23:59';
-  const location = preset.content?.location || (preset as any).location;
-  const description = preset.content?.description || (preset as any).description;
+function getEventName(item: EventViewItem): string {
+  return item.event.overrides?.name || item.model?.name || 'Evento';
+}
+
+function getEventEmoji(item: EventViewItem): string {
+  return item.event.overrides?.emoji || item.model?.emoji || '📌';
+}
+
+function getEventColor(item: EventViewItem): string {
+  return item.event.overrides?.color || item.model?.color || item.calendarColor || '#5e6ad2';
+}
+
+function getEventStartTime(item: EventViewItem): string | undefined {
+  return item.event.overrides?.startTime || item.model?.schedule?.startTime || (item.model as any)?.startTime;
+}
+
+function getEventTooltip(item: EventViewItem): string {
+  const parts = [`[${item.calendarName}] ${getEventName(item)}`];
+  const startTime = getEventStartTime(item);
+  const endTime = item.event.overrides?.endTime || item.model?.schedule?.endTime || (item.model as any)?.endTime || '23:59';
+  const location = item.event.overrides?.location || item.model?.content?.location || (item.model as any)?.location;
+  const description = item.event.overrides?.description || item.model?.content?.description || (item.model as any)?.description;
 
   if (startTime) {
     parts.push(`⏰ ${startTime} - ${endTime}`);
@@ -208,10 +223,10 @@ function getPresetTooltip(preset: Preset, instance: PresetInstance, calendarName
   if (location) {
     parts.push(`📍 ${location}`);
   }
-  if (instance.checklistState && instance.checklistState.length > 0) {
+  if (item.event.checklistState && item.event.checklistState.length > 0) {
     parts.push(`Tarefas:`);
-    for (const item of instance.checklistState) {
-      parts.push(` ${item.completed ? '☑' : '☐'} ${item.text}`);
+    for (const chk of item.event.checklistState) {
+      parts.push(` ${chk.completed ? '☑' : '☐'} ${chk.text}`);
     }
   } else if (description) {
     parts.push(`📝 ${description}`);
@@ -235,7 +250,7 @@ const calendarDays = computed(() => {
     isCurrentMonth: boolean;
     isToday: boolean;
     isSelected: boolean;
-    instances: Array<{ instance: PresetInstance; preset: Preset; calendarName: string; calendarColor: string }>;
+    events: EventViewItem[];
   }> = [];
 
   const prevMonthLastDay = new Date(year, month, 0).getDate();
@@ -248,7 +263,7 @@ const calendarDays = computed(() => {
       isCurrentMonth: false,
       isToday: iso === todayISO,
       isSelected: selectedSet.value.has(iso),
-      instances: getInstancesForDate(iso),
+      events: getEventsForDate(iso),
     });
   }
 
@@ -261,7 +276,7 @@ const calendarDays = computed(() => {
       isCurrentMonth: true,
       isToday: iso === todayISO,
       isSelected: selectedSet.value.has(iso),
-      instances: getInstancesForDate(iso),
+      events: getEventsForDate(iso),
     });
   }
 
@@ -275,7 +290,7 @@ const calendarDays = computed(() => {
       isCurrentMonth: false,
       isToday: iso === todayISO,
       isSelected: selectedSet.value.has(iso),
-      instances: getInstancesForDate(iso),
+      events: getEventsForDate(iso),
     });
   }
 

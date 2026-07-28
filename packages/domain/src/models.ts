@@ -6,7 +6,7 @@ export interface ChecklistItem {
   completed: boolean;
 }
 
-export interface Preset {
+export interface Model {
   id: string;
   name: string;
   emoji: string;
@@ -27,7 +27,7 @@ export interface Preset {
   };
 }
 
-export interface PresetInstanceOverrides {
+export interface EventOverrides {
   name?: string;
   emoji?: string;
   color?: string;
@@ -37,22 +37,16 @@ export interface PresetInstanceOverrides {
   description?: string;
 }
 
-export interface PresetInstance {
+export interface CalendarEvent {
   id: string;
-  presetId: string;
-  source: 'preset' | 'manual' | 'google';
-  overrides?: PresetInstanceOverrides;
+  date: ISODate;
+  modelId?: string; // null/undefined for standalone events
+  source: 'model' | 'manual' | 'google';
+  overrides?: EventOverrides;
   checklistState: ChecklistItem[];
   createdAt: string;
   modifiedAt?: string;
 }
-
-export interface Cell {
-  date: ISODate;
-  presetInstances: PresetInstance[];
-}
-
-export type CellMap = Record<ISODate, Cell>;
 
 export interface Calendar {
   id: string;
@@ -61,8 +55,8 @@ export interface Calendar {
   color: string;
   order: number;
   visible: boolean;
-  presets: Record<string, Preset>;
-  cells: CellMap;
+  models: Record<string, Model>;
+  events: Record<string, CalendarEvent>;
 }
 
 export interface Workspace {
@@ -75,7 +69,7 @@ export interface Workspace {
 
 export interface ClipboardItem {
   relativeDayOffset: number;
-  presetInstances: PresetInstance[];
+  events: CalendarEvent[];
 }
 
 export interface ClipboardData {

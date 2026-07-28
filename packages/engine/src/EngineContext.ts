@@ -1,11 +1,11 @@
-import { Workspace, Calendar, ClipboardData, PresetInstance } from '@cansche/domain';
+import { Workspace, Calendar, ClipboardData, CalendarEvent } from '@cansche/domain';
 import { ISODate } from '@cansche/shared';
 
 export interface EngineContext {
   getWorkspace(): Workspace;
   setWorkspace(workspace: Workspace): void;
   getActiveCalendar(): Calendar;
-  setCellPresetInstances(date: ISODate, instances: PresetInstance[]): void;
+  setEventsForDate(date: ISODate, events: CalendarEvent[]): void;
   getClipboard(): ClipboardData | null;
   setClipboard(clipboard: ClipboardData | null): void;
 }

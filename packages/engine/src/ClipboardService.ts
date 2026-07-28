@@ -15,10 +15,10 @@ export class ClipboardService {
     const calendar = context.getActiveCalendar();
 
     const items: ClipboardItem[] = sortedDates.map((d) => {
-      const cell = calendar.cells[d];
+      const dayEvents = Object.values(calendar.events || {}).filter(e => e.date === d);
       return {
         relativeDayOffset: diffInDays(originDate, d),
-        presetInstances: cell && cell.presetInstances ? [...cell.presetInstances] : [],
+        events: [...dayEvents],
       };
     });
 

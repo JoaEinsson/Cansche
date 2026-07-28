@@ -1,5 +1,5 @@
 import { CalendarEngine, Command } from '@cansche/engine';
-import { Workspace, Calendar, Preset, CellMap, ClipboardData } from '@cansche/domain';
+import { Workspace, Calendar, Model, CalendarEvent, ClipboardData } from '@cansche/domain';
 import { ISODate } from '@cansche/shared';
 
 export interface CalendarQueryMap {
@@ -9,9 +9,10 @@ export interface CalendarQueryMap {
   visibleCalendars: Calendar[];
   editingCalendarId: string;
   activeCalendarIds: string[];
-  presets: Preset[];
+  models: Model[];
+  presets: Model[];
   selectedDates: ISODate[];
-  cells: CellMap;
+  events: Record<string, CalendarEvent>;
   clipboard: ClipboardData | null;
   canUndo: boolean;
   canRedo: boolean;
@@ -54,12 +55,13 @@ export class CalendarAPI {
         return this.engine.getWorkspace().editingCalendarId as CalendarQueryMap[K];
       case 'activeCalendarIds':
         return (this.engine.getWorkspace().activeCalendarIds || []) as CalendarQueryMap[K];
+      case 'models':
       case 'presets':
-        return Object.values(this.engine.getActiveCalendar().presets) as CalendarQueryMap[K];
+        return Object.values(this.engine.getActiveCalendar().models || {}) as CalendarQueryMap[K];
       case 'selectedDates':
         return this.engine.selectionService.getSelectedDates() as CalendarQueryMap[K];
-      case 'cells':
-        return this.engine.getActiveCalendar().cells as CalendarQueryMap[K];
+      case 'events':
+        return (this.engine.getActiveCalendar().events || {}) as CalendarQueryMap[K];
       case 'clipboard':
         return this.engine.getClipboard() as CalendarQueryMap[K];
       case 'canUndo':

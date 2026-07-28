@@ -6,7 +6,9 @@ export * from './ClipboardService';
 export * from './ImportExportService';
 export * from './CalendarEngine';
 
+export * from './commands/ApplyModelCommand';
 export * from './commands/ApplyPresetCommand';
+export * from './commands/RemoveModelCommand';
 export * from './commands/RemovePresetCommand';
 export * from './commands/ClearCellsCommand';
 export * from './commands/MoveCommand';

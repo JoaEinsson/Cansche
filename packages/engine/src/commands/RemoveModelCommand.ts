@@ -3,20 +3,29 @@ import { EngineContext } from '../EngineContext';
 import { ISODate } from '@cansche/shared';
 import { CalendarEvent } from '@cansche/domain';
 
-export class ClearCellsCommand implements Command {
-  public description = 'Limpar Eventos';
+export class RemoveModelCommand implements Command {
+  public description = 'Remover Modelo';
   private previousStates: Record<ISODate, CalendarEvent[]> = {};
 
-  constructor(private dates: ISODate[]) {}
+  constructor(
+    private dates: ISODate[],
+    private modelId?: string
+  ) {}
 
   public execute(context: EngineContext): void {
     const calendar = context.getActiveCalendar();
     this.previousStates = {};
 
     for (const date of this.dates) {
-      const currentEvents = Object.values(calendar.events || {}).filter(e => e.date === date);
-      this.previousStates[date] = [...currentEvents];
-      context.setEventsForDate(date, []);
+      const current = Object.values(calendar.events || {}).filter(e => e.date === date);
+      this.previousStates[date] = [...current];
+
+      if (!this.modelId) {
+        context.setEventsForDate(date, []);
+      } else {
+        const updated = current.filter((ev) => ev.modelId !== this.modelId);
+        context.setEventsForDate(date, updated);
+      }
     }
   }
 
