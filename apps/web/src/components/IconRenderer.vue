@@ -298,7 +298,6 @@
       <polyline points="9 18 15 12 9 6" />
     </svg>
 
-    <!-- Eye / EyeOff icons -->
     <svg
       v-else-if="effectiveIconName === 'Eye'"
       :width="size"
@@ -331,6 +330,40 @@
       <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
       <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
       <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Edit2'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Trash2'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      <line x1="10" x2="10" y1="11" y2="17" />
+      <line x1="14" x2="14" y1="11" y2="17" />
     </svg>
 
     <!-- Render Custom Emoji if present and valid -->
@@ -406,6 +439,8 @@ const knownLucideIcons = new Set([
   'ChevronRight',
   'Eye',
   'EyeOff',
+  'Edit2',
+  'Trash2',
 ]);
 
 const effectiveIconName = computed(() => {
