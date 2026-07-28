@@ -2,19 +2,19 @@
   <div
     @pointerdown="onPointerDownCell"
     @mouseenter="onMouseEnterCell"
-    class="relative flex flex-col h-full bg-[#0f1011] border rounded-[8px] p-1.5 transition-all select-none overflow-hidden group min-h-0"
+    class="relative flex flex-col h-full border rounded-[8px] p-1.5 transition-all select-none overflow-hidden group min-h-0"
     :class="[
-      day.isCurrentMonth ? 'text-white border-[#23252a]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/50',
+      day.isCurrentMonth ? 'text-white border-[#23252a] bg-[#0f1011]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/60 opacity-40',
       day.isToday ? 'border-[#02b8cc]/60 shadow-xs shadow-[#02b8cc]/20' : '',
-      day.isSelected ? 'ring-2 ring-white border-transparent bg-[#161718]' : 'hover:border-[#383b3f]',
-      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/10 border-[#02b8cc]' : ''
+      day.isSelected ? 'ring-2 ring-white border-transparent bg-[#161718] opacity-100' : 'hover:border-[#383b3f]',
+      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/10 border-[#02b8cc] opacity-100' : ''
     ]"
   >
     <!-- Top Row: Day Number & Badge Indicators -->
     <div class="flex items-center justify-between mb-1 shrink-0">
       <span
         class="text-xs font-mono font-medium px-1 py-0.2 rounded transition-colors"
-        :class="day.isToday ? 'bg-[#02b8cc] text-[#08090a] font-bold' : 'text-[#8a8f98] group-hover:text-white'"
+        :class="day.isToday ? 'bg-[#02b8cc] text-[#08090a] font-bold' : (day.isCurrentMonth ? 'text-[#8a8f98] group-hover:text-white' : 'text-[#4e525a]')"
       >
         {{ day.dayNumber }}
       </span>
