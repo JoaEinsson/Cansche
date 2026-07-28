@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-icons.mjs",
-    "build": "node scripts/generate-icons.mjs && tauri build",
+    "prebuild": "node scripts/generate-valid-pngs.mjs",
+    "build": "node scripts/generate-valid-pngs.mjs && tauri build",
     "tauri": "tauri"
   },
   "dependencies": {
