@@ -17,19 +17,19 @@
         </button>
       </div>
 
-      <!-- Top Action Grid Buttons (Standardized 6px button radius & carbon/graphite tokens) -->
+      <!-- Top Action Grid Buttons -->
       <div class="grid grid-cols-3 gap-3">
         <button
           @click="showCreateForm = !showCreateForm"
-          class="bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center shadow-md shadow-[#5e6ad2]/20 transition-all cursor-pointer leading-tight"
+          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center transition-all cursor-pointer leading-tight shadow-xs"
         >
-          <span class="text-xs">+ Novo</span>
+          <span class="text-xs font-semibold">+ Novo</span>
           <span class="text-xs">Calendário</span>
         </button>
 
         <label class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] text-white font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center cursor-pointer transition-all leading-tight">
           <div class="flex items-center gap-1.5 text-xs font-medium">
-            <svg class="w-3.5 h-3.5 text-[#5e6ad2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5 text-[#8a8f98]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             <span>Importar</span>
@@ -43,7 +43,7 @@
           class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] text-white font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center transition-all leading-tight cursor-pointer"
         >
           <div class="flex items-center gap-1.5 text-xs font-medium">
-            <svg class="w-3.5 h-3.5 text-[#5e6ad2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5 text-[#8a8f98]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
             <span>Backup</span>
@@ -61,7 +61,7 @@
               v-model="newCalName"
               type="text"
               placeholder="ex: 📚 Faculdade 2026"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
             />
           </div>
           <div>
@@ -75,7 +75,7 @@
         </div>
         <div class="flex justify-end space-x-2">
           <button @click="showCreateForm = false" class="px-3 py-1.5 bg-[#23252a] hover:bg-[#383b3f] text-[#d0d6e0] rounded-[6px] text-xs font-medium">Cancelar</button>
-          <button @click="createCalendar" class="px-4 py-1.5 bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white rounded-[6px] text-xs font-medium shadow-md shadow-[#5e6ad2]/20">Salvar</button>
+          <button @click="createCalendar" class="px-4 py-1.5 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-xs font-medium">Salvar</button>
         </div>
       </div>
 
@@ -86,7 +86,7 @@
           :key="cal.id"
           class="flex items-center justify-between p-3.5 rounded-[12px] border transition-all"
           :class="cal.id === editingCalendarId
-            ? 'bg-[#161718] border-[#5e6ad2] shadow-xs'
+            ? 'bg-[#161718] border-[#383b3f] shadow-xs'
             : 'bg-[#0f1011] border-[#23252a] hover:border-[#383b3f]'"
         >
           <div class="flex items-center space-x-3 min-w-0">
@@ -94,12 +94,12 @@
             <div class="truncate">
               <div class="flex items-center space-x-2">
                 <span class="font-medium text-white text-xs truncate">{{ cal.name }}</span>
-                <span v-if="cal.id === editingCalendarId" class="text-[10px] px-2 py-0.5 bg-[#5e6ad2]/20 text-[#8b5cf6] rounded-[4px] border border-[#5e6ad2]/30 font-mono font-medium">
+                <span v-if="cal.id === editingCalendarId" class="text-[10px] px-2 py-0.5 bg-[#23252a] text-[#8a8f98] rounded-[4px] border border-[#383b3f] font-mono font-medium">
                   Em Edição
                 </span>
               </div>
               <div class="text-[11px] text-[#8a8f98] font-mono mt-0.5">
-                {{ Object.keys(cal.presets).length }} templates • {{ Object.keys(cal.cells).length }} datas
+                {{ Object.keys(cal.models || (cal as any).presets || {}).length }} modelos • {{ Object.keys(cal.events || {}).length }} eventos
               </div>
             </div>
           </div>

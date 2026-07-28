@@ -1,11 +1,11 @@
 <template>
-  <div class="flex-1 flex flex-col h-full overflow-hidden bg-linear-base p-3 select-none">
+  <div class="flex-1 flex flex-col h-full overflow-hidden bg-[#08090a] p-3 select-none">
     <!-- Days of Week Header -->
     <div class="grid grid-cols-7 gap-1.5 mb-1.5 text-center shrink-0">
       <div
         v-for="dayName in daysOfWeek"
         :key="dayName"
-        class="font-mono text-[11px] font-semibold text-linear-darkMuted uppercase tracking-wider py-1 border-b border-linear-subtle"
+        class="font-mono text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider py-1 border-b border-[#23252a]"
       >
         {{ dayName }}
       </div>
@@ -22,20 +22,20 @@
         @mousedown="onMouseDown(day.date, $event)"
         @mouseenter="onMouseEnter(day.date)"
         @mouseup="onMouseUp"
-        class="group relative rounded border flex flex-col justify-between p-1.5 transition-all duration-100 cursor-pointer overflow-hidden"
+        class="group relative rounded-[8px] border flex flex-col justify-between p-1.5 transition-all duration-100 cursor-pointer overflow-hidden"
         :class="[
           day.isSelected
-            ? '!bg-indigo-950/60 !border-indigo-400 ring-2 ring-indigo-500/80 shadow-lg shadow-indigo-500/20 z-10'
+            ? '!bg-[#161718] !border-white ring-1 ring-white/40 shadow-md z-10'
             : day.isCurrentMonth
-            ? 'bg-linear-surface border-linear-subtle hover:border-slate-700'
-            : 'bg-linear-base/40 border-linear-base/60 text-linear-darkMuted opacity-35',
-          day.isToday && !day.isSelected ? 'border-cyan-500/80' : ''
+            ? 'bg-[#0f1011] border-[#23252a] hover:border-[#383b3f]'
+            : 'bg-[#08090a]/50 border-[#161718] text-[#62666d] opacity-40',
+          day.isToday && !day.isSelected ? 'border-[#02b8cc]/80' : ''
         ]"
       >
         <!-- Top accent bar for selected cells -->
         <div
           v-if="day.isSelected"
-          class="absolute top-0 left-0 right-0 h-0.5 bg-indigo-400 shadow-sm"
+          class="absolute top-0 left-0 right-0 h-0.5 bg-white shadow-xs"
         ></div>
 
         <!-- Cell Top Bar: Date Number + Today Indicator -->
@@ -44,16 +44,16 @@
             class="text-[11px] font-mono px-1.5 py-0.5 rounded transition-colors"
             :class="[
               day.isSelected
-                ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                ? 'bg-white text-[#08090a] font-bold shadow-xs'
                 : day.isToday
-                ? 'bg-cyan-500 text-black font-bold'
-                : 'text-linear-muted group-hover:text-linear-text'
+                ? 'bg-[#02b8cc] text-black font-bold'
+                : 'text-[#8a8f98] group-hover:text-white'
             ]"
           >
             {{ day.dayNumber }}
           </span>
 
-          <span v-if="day.isToday" class="w-1.5 h-1.5 rounded-full bg-cyan-400" title="Hoje"></span>
+          <span v-if="day.isToday" class="w-1.5 h-1.5 rounded-full bg-[#02b8cc]" title="Hoje"></span>
         </div>
 
         <!-- Cell Events (Consolidated across visible layers) -->
@@ -61,7 +61,7 @@
           <div
             v-for="item in day.events"
             :key="item.event.id"
-            class="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center justify-between border truncate leading-tight shadow-sm"
+            class="px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium flex items-center justify-between border truncate leading-tight shadow-xs"
             :style="{
               backgroundColor: getEventColor(item) + '25',
               borderColor: getEventColor(item) + '70',
@@ -89,8 +89,8 @@
               <button
                 v-if="item.event.checklistState && item.event.checklistState.length > 0"
                 @click.stop="toggleFirstChecklist(item.event)"
-                class="text-[9px] font-mono hover:scale-110 transition-transform px-1 rounded bg-black/30"
-                :class="isAllCompleted(item.event.checklistState) ? 'text-emerald-400 font-bold' : 'text-indigo-300'"
+                class="text-[9px] font-mono hover:scale-110 transition-transform px-1 rounded bg-black/40 text-white"
+                :class="isAllCompleted(item.event.checklistState) ? 'text-emerald-400 font-bold' : 'text-slate-300'"
                 title="Clique para alternar tarefa concluída neste dia"
               >
                 {{ getCompletedCount(item.event.checklistState) }}/{{ item.event.checklistState.length }} ☑
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Overflow Counter if many events -->
-        <div v-if="day.events.length > 3" class="text-[9px] font-mono text-linear-darkMuted text-right leading-none pt-0.5">
+        <div v-if="day.events.length > 3" class="text-[9px] font-mono text-[#62666d] text-right leading-none pt-0.5">
           +{{ day.events.length - 3 }}
         </div>
       </div>

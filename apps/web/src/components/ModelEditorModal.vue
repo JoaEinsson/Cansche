@@ -32,7 +32,7 @@
               v-model="form.name"
               type="text"
               placeholder="ex: Aula Faculdade, Trabalho Remoto"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
             />
           </div>
           <div>
@@ -41,7 +41,7 @@
               v-model="form.category"
               type="text"
               placeholder="ex: Estudo"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
             />
           </div>
         </div>
@@ -54,7 +54,7 @@
               v-model="form.emoji"
               type="text"
               maxLength="2"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-white"
             />
           </div>
           <div>
@@ -74,7 +74,7 @@
             <input
               v-model="form.startTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
             />
           </div>
           <div>
@@ -82,7 +82,7 @@
             <input
               v-model="form.endTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
             />
           </div>
           <div>
@@ -91,7 +91,7 @@
               v-model="form.location"
               type="text"
               placeholder="ex: Campus"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
             />
           </div>
         </div>
@@ -100,7 +100,7 @@
         <div>
           <label class="text-[#d0d6e0] font-medium block mb-1 flex items-center justify-between text-[11px]">
             <span>Checklist Padrão (Tarefas)</span>
-            <button @click="addChecklistItem" type="button" class="text-[11px] text-[#5e6ad2] hover:underline font-medium">+ Adicionar Item</button>
+            <button @click="addChecklistItem" type="button" class="text-[11px] text-white hover:underline font-medium">+ Adicionar Item</button>
           </label>
           
           <div class="space-y-1.5 max-h-24 overflow-y-auto pr-1">
@@ -113,7 +113,7 @@
                 v-model="form.checklistTemplate[index]"
                 type="text"
                 placeholder="ex: Revisar conteúdo da aula"
-                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#5e6ad2]"
+                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-white"
               />
               <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-red-400">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +131,7 @@
             v-model="form.description"
             rows="2"
             placeholder="Instruções padrão para este modelo..."
-            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-[#5e6ad2] resize-none"
+            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-white resize-none"
           ></textarea>
         </div>
       </div>
@@ -146,7 +146,7 @@
         </button>
         <button
           @click="save"
-          class="bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-md shadow-[#5e6ad2]/20 cursor-pointer"
+          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-xs cursor-pointer"
         >
           {{ isEditing ? 'Salvar Alterações' : 'Criar Modelo' }}
         </button>
@@ -238,10 +238,7 @@ function removeChecklistItem(index: number) {
 }
 
 function save() {
-  console.log('[DEBUG 1] ModelEditorModal save() clicado. Form:', form.value);
-
   if (!form.value.name.trim()) {
-    console.warn('[DEBUG 1] ModelEditorModal: Nome em branco! Interrompendo save().');
     alert('Por favor, preencha o Nome do Modelo.');
     return;
   }
@@ -265,7 +262,6 @@ function save() {
     },
   };
 
-  console.log('[DEBUG 1] ModelEditorModal emitindo "save" com modelData:', modelData);
   emit('save', modelData);
 }
 </script>

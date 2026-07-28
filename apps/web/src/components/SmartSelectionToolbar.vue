@@ -9,28 +9,28 @@
   >
     <div
       v-if="selectedCount > 0"
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-linear-elevated border border-linear-border px-3 py-1.5 rounded-lg shadow-xl flex items-center space-x-3 text-xs font-medium select-none"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#161718] border border-[#23252a] px-3 py-1.5 rounded-[8px] shadow-2xl flex items-center space-x-3 text-xs font-medium select-none"
     >
       <!-- Selection Counter -->
-      <div class="flex items-center space-x-1.5 border-r border-linear-subtle pr-3">
-        <span class="px-1.5 py-0.5 rounded bg-linear-brand font-mono font-bold text-white text-[11px]">
+      <div class="flex items-center space-x-1.5 border-r border-[#23252a] pr-3">
+        <span class="px-1.5 py-0.5 rounded-[4px] bg-white font-mono font-bold text-[#08090a] text-[11px] shadow-xs">
           {{ selectedCount }}
         </span>
-        <span class="text-linear-muted text-[11px]">selecionadas</span>
+        <span class="text-[#8a8f98] text-[11px]">selecionadas</span>
       </div>
 
       <!-- Smart Selectors -->
-      <div class="flex items-center space-x-1 border-r border-linear-subtle pr-3">
+      <div class="flex items-center space-x-1 border-r border-[#23252a] pr-3">
         <button
           @click="$emit('select-saturdays')"
-          class="px-2 py-1 rounded bg-linear-surface hover:bg-linear-border text-linear-text border border-linear-subtle text-[11px] transition-colors"
+          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors"
           title="Selecionar todos os sábados"
         >
           Sábados
         </button>
         <button
           @click="$emit('select-weekends')"
-          class="px-2 py-1 rounded bg-linear-surface hover:bg-linear-border text-linear-text border border-linear-subtle text-[11px] transition-colors"
+          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors"
           title="Selecionar sábados e domingos"
         >
           Finais de Semana
@@ -41,27 +41,27 @@
       <div class="flex items-center space-x-1.5">
         <button
           @click="$emit('copy')"
-          class="px-2.5 py-1 bg-linear-surface hover:bg-linear-border text-linear-text rounded flex items-center space-x-1 border border-linear-subtle text-[11px] transition-colors"
+          class="px-2.5 py-1 bg-[#0f1011] hover:bg-[#23252a] text-white rounded-[6px] flex items-center space-x-1 border border-[#23252a] text-[11px] transition-colors"
           title="Copiar células (Ctrl+C)"
         >
           <span>Copiar</span>
-          <kbd class="text-[9px] font-mono text-linear-darkMuted">^C</kbd>
+          <kbd class="text-[9px] font-mono text-[#62666d]">^C</kbd>
         </button>
 
         <button
           @click="$emit('paste')"
           :disabled="!hasClipboard"
-          class="px-2.5 py-1 rounded flex items-center space-x-1 border text-[11px] transition-colors"
-          :class="hasClipboard ? 'bg-linear-surface hover:bg-linear-border text-linear-text border-linear-subtle cursor-pointer' : 'opacity-40 text-linear-darkMuted border-transparent cursor-not-allowed'"
+          class="px-2.5 py-1 rounded-[6px] flex items-center space-x-1 border text-[11px] transition-colors"
+          :class="hasClipboard ? 'bg-[#0f1011] hover:bg-[#23252a] text-white border-[#23252a] cursor-pointer' : 'opacity-40 text-[#62666d] border-transparent cursor-not-allowed'"
           title="Colar células (Ctrl+V)"
         >
           <span>Colar</span>
-          <kbd class="text-[9px] font-mono text-linear-darkMuted">^V</kbd>
+          <kbd class="text-[9px] font-mono text-[#62666d]">^V</kbd>
         </button>
 
         <button
           @click="$emit('clear-cells')"
-          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 flex items-center space-x-1 text-[11px] transition-colors"
+          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1 text-[11px] transition-colors"
           title="Limpar seleção (Del)"
         >
           <span>Limpar</span>
@@ -70,7 +70,7 @@
 
         <button
           @click="$emit('deselect')"
-          class="p-1 text-linear-darkMuted hover:text-linear-text rounded hover:bg-linear-surface transition-colors"
+          class="p-1 text-[#62666d] hover:text-white rounded-[6px] hover:bg-[#23252a] transition-colors"
           title="Deselecionar (Esc)"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
