@@ -1,4 +1,4 @@
-import { ISODate, getDaysBetween, getDayOfWeek, isWeekend } from '@cansche/shared';
+import { ISODate, toISODate, getDaysBetween, getDayOfWeek, isWeekend } from '@cansche/shared';
 import { CalendarEvent } from '@cansche/domain';
 
 export class SelectionService {
@@ -18,10 +18,18 @@ export class SelectionService {
     this.anchorDate = null;
   }
 
+  public clearSelection(): void {
+    this.clear();
+  }
+
   public selectSingle(date: ISODate): void {
     this.selectedDatesSet.clear();
     this.selectedDatesSet.add(date);
     this.anchorDate = date;
+  }
+
+  public selectSingleDate(date: ISODate): void {
+    this.selectSingle(date);
   }
 
   public toggleDate(date: ISODate): void {
@@ -33,13 +41,21 @@ export class SelectionService {
     }
   }
 
-  public selectRange(targetDate: ISODate): void {
-    if (!this.anchorDate) {
-      this.selectSingle(targetDate);
+  public addDateToSelection(date: ISODate): void {
+    this.selectedDatesSet.add(date);
+    this.anchorDate = date;
+  }
+
+  public selectRange(targetDateOrAnchor: ISODate, targetDate?: ISODate): void {
+    const end = targetDate || targetDateOrAnchor;
+    const start = targetDate ? targetDateOrAnchor : this.anchorDate;
+
+    if (!start) {
+      this.selectSingle(end);
       return;
     }
 
-    const range = getDaysBetween(this.anchorDate, targetDate);
+    const range = getDaysBetween(start, end);
     for (const d of range) {
       this.selectedDatesSet.add(d);
     }
@@ -53,6 +69,15 @@ export class SelectionService {
   }
 
   // Smart Selections
+  public getMonthDates(year: number, month: number): ISODate[] {
+    const dates: ISODate[] = [];
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    for (let day = 1; day <= totalDays; day++) {
+      dates.push(toISODate(new Date(year, month, day)));
+    }
+    return dates;
+  }
+
   public selectByDayOfWeek(allDatesInRange: ISODate[], targetDayOfWeek: number): void {
     for (const d of allDatesInRange) {
       if (getDayOfWeek(d) === targetDayOfWeek) {
@@ -61,12 +86,20 @@ export class SelectionService {
     }
   }
 
+  public selectSaturdays(year: number, month: number): void {
+    this.selectByDayOfWeek(this.getMonthDates(year, month), 6);
+  }
+
   public selectWeekendsInRange(allDatesInRange: ISODate[]): void {
     for (const d of allDatesInRange) {
       if (isWeekend(d)) {
         this.selectedDatesSet.add(d);
       }
     }
+  }
+
+  public selectWeekends(year: number, month: number): void {
+    this.selectWeekendsInRange(this.getMonthDates(year, month));
   }
 
   public selectByModel(events: Record<string, CalendarEvent>, modelId: string): void {

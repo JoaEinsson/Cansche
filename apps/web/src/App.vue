@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen flex flex-col bg-linear-base text-linear-text overflow-hidden font-sans">
+  <div class="h-screen w-screen flex flex-col bg-[#08090a] text-[#d0d6e0] overflow-hidden font-sans">
     <!-- Top Bar Navigation -->
     <HeaderBar
       :current-month-label="currentMonthLabel"
@@ -37,6 +37,15 @@
         :selected-dates="selectedDates"
         @select-date="handleDateSelection"
         @toggle-checklist="handleToggleChecklist"
+        @edit-model="handleEditModel"
+        @deselect="handleDeselect"
+      />
+
+      <!-- Right Sidebar: Event Inspector -->
+      <EventInspector
+        @toggle-checklist="handleToggleChecklist"
+        @edit-model="handleEditModel"
+        @delete-event="handleDeleteEvent"
       />
 
       <!-- Floating Toolbar for Batch Actions -->
@@ -51,6 +60,9 @@
         @deselect="handleDeselect"
       />
     </div>
+
+    <!-- Drag & Drop Floating Overlay -->
+    <DragOverlay />
 
     <!-- Rich Model Editor Modal -->
     <ModelEditorModal
@@ -79,179 +91,145 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand } from '@cansche/engine';
-import { CalendarAPI } from '@cansche/api';
-import { StorageFactory } from '@cansche/storage';
-import { WebPlatformAdapter } from '@cansche/platform';
-import { DefaultCalendarRepository } from '@cansche/repositories';
-import { ApplicationImportExportService, NotificationService } from '@cansche/application';
-import { ISODate, getDaysBetween, toISODate } from '@cansche/shared';
-import { Model, Calendar, ClipboardData } from '@cansche/domain';
+import { ISODate, toISODate } from '@cansche/shared';
+import { Calendar, Model, CalendarEvent } from '@cansche/domain';
+import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand } from '@cansche/engine';
+import { SelectionService } from '@cansche/selection';
+import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
+import { DesktopPlatformAdapter } from '@cansche/platform';
+import { ApplicationImportExportService, BackupService, NotificationService, InspectorService, DragService } from '@cansche/application';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';
 import CalendarGrid from './components/CalendarGrid.vue';
+import EventInspector from './components/EventInspector.vue';
 import SmartSelectionToolbar from './components/SmartSelectionToolbar.vue';
 import ModelEditorModal from './components/ModelEditorModal.vue';
 import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
+import DragOverlay from './components/DragOverlay.vue';
 
+// Core Architecture Services Initialization
+const repository = new LocalStorageRepository();
+const platform = new DesktopPlatformAdapter();
 const engine = new CalendarEngine();
-const api = new CalendarAPI(engine);
+const selectionService = new SelectionService();
 
-const platform = new WebPlatformAdapter();
-const storageAdapter = StorageFactory.createAdapter('indexeddb');
-const repository = new DefaultCalendarRepository(storageAdapter);
-const appImportExport = new ApplicationImportExportService(repository, platform);
+const importExportService = new ApplicationImportExportService(repository, platform);
+const backupService = new BackupService(repository, platform);
 const notificationService = new NotificationService(platform);
 
-const currentDate = ref(new Date());
+// Reactive Application State
+const workspace = ref(engine.getWorkspace());
+const currentYear = ref(new Date().getFullYear());
+const currentMonth = ref(new Date().getMonth());
 const selectedDates = ref<ISODate[]>([]);
-const allCalendars = ref<Calendar[]>([]);
-const visibleCalendars = ref<Calendar[]>([]);
-const editingCalendarId = ref<string>('');
-const activeCalendarIds = ref<string[]>([]);
-const models = ref<Model[]>([]);
-const clipboard = ref<ClipboardData | null>(null);
-const canUndo = ref(false);
-const canRedo = ref(false);
 
 const isModalOpen = ref(false);
-const isWorkspaceManagerOpen = ref(false);
 const editingModel = ref<Model | null>(null);
+const isWorkspaceManagerOpen = ref(false);
 
 const monthNames = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const currentYear = computed(() => currentDate.value.getFullYear());
-const currentMonth = computed(() => currentDate.value.getMonth());
-const currentMonthLabel = computed(() => `${monthNames[currentMonth.value]} ${currentYear.value}`);
-
-function syncState() {
-  allCalendars.value = [...api.query('allCalendars')];
-  visibleCalendars.value = [...api.query('visibleCalendars')];
-  editingCalendarId.value = api.query('editingCalendarId');
-  activeCalendarIds.value = [...api.query('activeCalendarIds')];
-  models.value = [...api.query('models')];
-  console.log('[DEBUG 4 App] syncState() models.value atualizado:', models.value);
-  selectedDates.value = [...api.query('selectedDates')];
-  clipboard.value = api.query('clipboard');
-  canUndo.value = api.query('canUndo');
-  canRedo.value = api.query('canRedo');
-}
-
-api.subscribe(() => {
-  syncState();
+const currentMonthLabel = computed(() => {
+  return `${monthNames[currentMonth.value]} ${currentYear.value}`;
 });
 
-// Navigation
-function prevMonth() {
-  currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
-}
-function nextMonth() {
-  currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
-}
-function goToToday() {
-  currentDate.value = new Date();
+const allCalendars = computed(() => {
+  if (!workspace.value?.calendars) return [];
+  return Object.values(workspace.value.calendars).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+});
+
+const editingCalendarId = computed(() => {
+  return workspace.value.editingCalendarId;
+});
+
+const activeCalendarIds = computed(() => {
+  return allCalendars.value.filter(c => c.visible).map(c => c.id);
+});
+
+const visibleCalendars = computed(() => {
+  return allCalendars.value.filter(c => c.visible);
+});
+
+const models = computed(() => {
+  const ws = workspace.value;
+  if (!ws || !ws.editingCalendarId || !ws.calendars) return [];
+  const activeCal = ws.calendars[ws.editingCalendarId];
+  if (!activeCal) return [];
+  return Object.values(activeCal.models || (activeCal as any).presets || {});
+});
+
+const canUndo = computed(() => engine.canUndo());
+const canRedo = computed(() => engine.canRedo());
+const clipboard = computed(() => engine.getClipboard());
+
+function syncState() {
+  workspace.value = { ...engine.getWorkspace() };
 }
 
-// Workspace Layer Management
-function handleSelectEditingCalendar(id: string) {
-  engine.setEditingCalendar(id);
+function handleSelectEditingCalendar(calendarId: string) {
+  engine.setEditingCalendar(calendarId);
   syncState();
   autoSave();
 }
 
-function handleToggleLayerVisibility(id: string) {
-  engine.toggleCalendarVisibility(id);
+function handleToggleLayerVisibility(calendarId: string) {
+  engine.toggleLayerVisibility(calendarId);
   syncState();
   autoSave();
 }
 
-function handleCreateCalendar(data: { name: string; color: string }) {
-  engine.createCalendar(data.name, data.color);
+function handleCreateCalendar(payload: { name: string; color?: string }) {
+  engine.createCalendar(payload.name, payload.color);
   syncState();
   autoSave();
 }
 
-function handleDuplicateCalendar(id: string) {
-  engine.duplicateCalendar(id);
+function handleDuplicateCalendar(calendarId: string) {
+  engine.duplicateCalendar(calendarId);
   syncState();
   autoSave();
 }
 
-function handleDeleteCalendar(id: string) {
-  try {
-    engine.deleteCalendar(id);
-    syncState();
-    autoSave();
-  } catch (err: any) {
-    alert(err.message || 'Erro ao excluir calendário.');
-  }
+function handleDeleteCalendar(calendarId: string) {
+  engine.deleteCalendar(calendarId);
+  syncState();
+  autoSave();
 }
 
-async function handleExportCalendar(id: string) {
-  const targetCal = allCalendars.value.find((c) => c.id === id);
-  if (targetCal) {
-    await appImportExport.exportCalendarFile(targetCal);
-  }
-}
-
-async function handleExportWorkspace() {
-  const ws = api.query('workspace');
-  if (ws) {
-    await appImportExport.exportWorkspaceFile(ws);
-  }
-}
-
-function handleImportFile(jsonString: string) {
-  try {
-    const res = engine.importFile(jsonString);
-    syncState();
-    autoSave();
-    alert(`Sucesso! ${res.type === 'calendar' ? 'Calendário' : 'Workspace'} importado.`);
-  } catch (err: any) {
-    alert(err.message || 'Falha ao importar o arquivo .cansche');
-  }
-}
-
-// Selection Handlers
 function handleDateSelection(payload: { date: ISODate; ctrlKey: boolean; shiftKey: boolean; isDrag: boolean }) {
-  if (payload.shiftKey) {
-    engine.selectionService.selectRange(payload.date);
-  } else if (payload.ctrlKey || payload.isDrag) {
-    engine.selectionService.toggleDate(payload.date);
+  if (payload.ctrlKey) {
+    selectionService.toggleDate(payload.date);
+  } else if (payload.shiftKey && selectedDates.value.length > 0) {
+    selectionService.selectRange(payload.date);
   } else {
-    engine.selectionService.selectSingle(payload.date);
+    if (!payload.isDrag) {
+      selectionService.selectSingleDate(payload.date);
+    } else {
+      selectionService.addDateToSelection(payload.date);
+    }
   }
-  syncState();
-}
-
-function handleDeselect() {
-  engine.selectionService.clear();
-  syncState();
-}
-
-function getVisibleDatesForCurrentMonth(): ISODate[] {
-  const start = new Date(currentYear.value, currentMonth.value, 1);
-  const end = new Date(currentYear.value, currentMonth.value + 1, 0);
-  return getDaysBetween(toISODate(start), toISODate(end));
+  selectedDates.value = [...selectionService.getSelectedDates()];
 }
 
 function handleSelectSaturdays() {
-  const visible = getVisibleDatesForCurrentMonth();
-  engine.selectionService.selectByDayOfWeek(visible, 6);
-  syncState();
+  selectionService.selectSaturdays(currentYear.value, currentMonth.value);
+  selectedDates.value = [...selectionService.getSelectedDates()];
 }
 
 function handleSelectWeekends() {
-  const visible = getVisibleDatesForCurrentMonth();
-  engine.selectionService.selectWeekendsInRange(visible);
-  syncState();
+  selectionService.selectWeekends(currentYear.value, currentMonth.value);
+  selectedDates.value = [...selectionService.getSelectedDates()];
 }
 
-// Model Modal & Actions
+function handleDeselect() {
+  selectionService.clearSelection();
+  selectedDates.value = [];
+}
+
 function handleOpenCreateModal() {
   editingModel.value = null;
   isModalOpen.value = true;
@@ -263,12 +241,9 @@ function handleEditModel(model: Model) {
 }
 
 function handleSaveModel(modelData: Model) {
-  console.log('[DEBUG 2 App] handleSaveModel recebido:', modelData);
   if (modelData.id) {
-    console.log('[DEBUG 2 App] Atualizando modelo existente:', modelData.id);
     engine.updateModel(modelData);
   } else {
-    console.log('[DEBUG 2 App] Adicionando novo modelo no Engine');
     engine.addModel(modelData);
   }
   syncState();
@@ -284,7 +259,7 @@ function handleDeleteModel(modelId: string) {
 
 function handleApplyModel(modelId: string) {
   if (selectedDates.value.length === 0) return;
-  api.execute(new ApplyModelCommand(selectedDates.value, modelId));
+  engine.execute(new ApplyModelCommand(selectedDates.value, modelId));
   
   const targetModel = models.value.find(m => m.id === modelId);
   if (targetModel) {
@@ -308,9 +283,18 @@ function handleToggleChecklist(payload: { eventId?: string; instanceId?: string;
   }
 }
 
+function handleDeleteEvent(evt: CalendarEvent) {
+  if (evt && evt.id) {
+    engine.removeEvent(evt.id);
+    InspectorService.close();
+    syncState();
+    autoSave();
+  }
+}
+
 function handleClearCells() {
   if (selectedDates.value.length === 0) return;
-  api.execute(new ClearCellsCommand(selectedDates.value));
+  engine.execute(new ClearCellsCommand(selectedDates.value));
   syncState();
   autoSave();
 }
@@ -322,46 +306,137 @@ function handleCopy() {
 }
 
 function handlePaste() {
-  const clip = api.query('clipboard');
+  const clip = engine.getClipboard();
   if (!clip || selectedDates.value.length === 0) return;
   const targetDate = selectedDates.value[0];
-  api.execute(new PasteCommand(targetDate, clip));
+  engine.execute(new PasteCommand(targetDate, clip));
   syncState();
   autoSave();
 }
 
 function handleUndo() {
-  api.undo();
+  engine.undo();
   syncState();
   autoSave();
 }
 
 function handleRedo() {
-  api.redo();
+  engine.redo();
   syncState();
   autoSave();
 }
 
 async function autoSave() {
   try {
-    await repository.saveWorkspace(api.query('workspace'));
+    await repository.saveWorkspace(engine.getWorkspace());
   } catch (err) {
     console.error('AutoSave failed:', err);
   }
 }
 
-// Full Desktop Keyboard Shortcuts
+function prevMonth() {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11;
+    currentYear.value--;
+  } else {
+    currentMonth.value--;
+  }
+}
+
+function nextMonth() {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0;
+    currentYear.value++;
+  } else {
+    currentMonth.value++;
+  }
+}
+
+function goToToday() {
+  const now = new Date();
+  currentYear.value = now.getFullYear();
+  currentMonth.value = now.getMonth();
+  const today = toISODate(now);
+  selectionService.selectSingleDate(today);
+  selectedDates.value = [today];
+}
+
+async function handleExportCalendar(calendarId: string) {
+  const cal = engine.getCalendarsList().find(c => c.id === calendarId);
+  if (cal) {
+    await importExportService.exportCalendarFile(cal);
+  }
+}
+
+async function handleExportWorkspace() {
+  await importExportService.exportWorkspaceFile(engine.getWorkspace());
+}
+
+async function handleImportFile(content: string) {
+  const res = engine.exportWorkspace(); // test
+  syncState();
+  autoSave();
+}
+
+function handlePointerMove(event: PointerEvent) {
+  DragService.updatePosition(event);
+}
+
+function handlePointerUp(event: PointerEvent) {
+  const result = DragService.endDrag();
+  if (result) {
+    const { item, hoverDate, isCopyMode } = result;
+
+    if (item.type === 'model') {
+      engine.execute(new ApplyModelCommand([hoverDate], item.modelId));
+      const targetModel = models.value.find((m) => m.id === item.modelId);
+      if (targetModel) {
+        notificationService.notifyPresetEvent(
+          targetModel.name,
+          targetModel.schedule?.startTime,
+          targetModel.content?.location
+        );
+      }
+    } else if (item.type === 'event') {
+      if (isCopyMode) {
+        const activeCal = engine.getActiveCalendar();
+        const sourceEvt = activeCal.events ? activeCal.events[item.eventId] : undefined;
+        if (sourceEvt && sourceEvt.modelId) {
+          engine.execute(new ApplyModelCommand([hoverDate], sourceEvt.modelId));
+        }
+      } else {
+        if (item.sourceDate !== hoverDate) {
+          engine.execute(new MoveCommand([item.sourceDate], hoverDate));
+        }
+      }
+    }
+
+    syncState();
+    autoSave();
+  }
+}
+
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+  if (DragService.state.isDragging) {
+    if (event.key === 'Escape') {
+      DragService.cancelDrag();
+      return;
+    }
+  }
+
+  const target = event.target as HTMLElement | null;
+  const isTextInput = target && (
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.isContentEditable
+  );
+
+  if (isTextInput) {
     return;
   }
 
   const isCtrl = event.ctrlKey || event.metaKey;
-
-  if (isCtrl && event.shiftKey && event.key.toLowerCase() === 'z') {
-    event.preventDefault();
-    handleRedo();
-  } else if (isCtrl && event.key.toLowerCase() === 'z') {
+  if (isCtrl && event.key.toLowerCase() === 'z') {
     event.preventDefault();
     handleUndo();
   } else if (isCtrl && event.key.toLowerCase() === 'y') {
@@ -389,6 +464,8 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 onMounted(async () => {
+  window.addEventListener('pointermove', handlePointerMove);
+  window.addEventListener('pointerup', handlePointerUp);
   window.addEventListener('keydown', handleKeyDown);
 
   const saved = await repository.getWorkspace();
@@ -439,6 +516,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('pointermove', handlePointerMove);
+  window.removeEventListener('pointerup', handlePointerUp);
   window.removeEventListener('keydown', handleKeyDown);
 });
 </script>

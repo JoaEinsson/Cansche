@@ -1,87 +1,98 @@
 <template>
-  <aside class="w-64 bg-[#08090a] border-r border-[#23252a] flex flex-col h-full shrink-0 select-none p-3 space-y-4">
-    <!-- Section 1: Camadas -->
-    <div class="space-y-2 border-b border-[#23252a] pb-3">
-      <div class="flex items-center justify-between px-1 h-6">
-        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider leading-none">
-          Camadas
-        </span>
+  <aside class="w-64 bg-[#0f1011] border-r border-[#23252a] flex flex-col h-full shrink-0 select-none">
+    <!-- Workspace Header & Selector -->
+    <div class="p-3 border-b border-[#23252a] flex items-center justify-between">
+      <button
+        @click="$emit('open-workspace-manager')"
+        class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] hover:border-[#383b3f] text-white font-medium px-3 py-1.5 rounded-[6px] text-xs transition-colors cursor-pointer flex items-center space-x-2"
+      >
+        <span>Workspace</span>
+      </button>
+
+      <button
+        @click="$emit('open-workspace-manager')"
+        class="p-1.5 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded-[6px] transition-colors"
+        title="Gerenciar Camadas & Workspace"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Active Layers / Calendars Section -->
+    <div class="p-3 border-b border-[#23252a] space-y-2">
+      <div class="flex items-center justify-between text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">
+        <span>Camadas de Calendário</span>
         <button
           @click="$emit('open-workspace-manager')"
-          class="px-2 py-0.5 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-[10px] font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
-          title="Gerenciar Workspace"
+          class="hover:text-white transition-colors lowercase text-[11px]"
         >
-          Workspace
+          + nova
         </button>
       </div>
 
-      <!-- Layers List -->
-      <div class="space-y-1 max-h-36 overflow-y-auto pr-0.5">
+      <div class="space-y-1 max-h-36 overflow-y-auto pr-1">
         <div
-          v-for="cal in sortedCalendars"
+          v-for="cal in calendars"
           :key="cal.id"
           @click="$emit('select-editing-calendar', cal.id)"
-          class="group flex items-center justify-between px-2.5 py-1.5 rounded-[6px] border transition-all cursor-pointer text-xs"
-          :class="cal.id === editingCalendarId ? 'bg-[#161718] border-[#383b3f] text-white font-medium shadow-xs' : 'bg-transparent border-transparent hover:bg-[#0f1011] text-[#8a8f98]'"
+          class="flex items-center justify-between p-2 rounded-[6px] cursor-pointer text-xs transition-all border group"
+          :class="cal.id === editingCalendarId
+            ? 'bg-[#161718] border-[#383b3f] text-white font-medium'
+            : 'border-transparent text-[#8a8f98] hover:bg-[#161718]/60 hover:text-white'"
         >
-          <div class="flex items-center space-x-2 truncate">
-            <!-- Layer Color Dot -->
-            <span
-              class="w-2.5 h-2.5 rounded-full shrink-0 border border-black/40"
-              :style="{ backgroundColor: cal.color }"
-            ></span>
+          <div class="flex items-center space-x-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-black/40" :style="{ backgroundColor: cal.color }"></span>
             <span class="truncate">{{ cal.name }}</span>
-            <span v-if="cal.id === editingCalendarId" class="text-[9px] text-[#8a8f98] font-mono shrink-0">
-              [Edição]
-            </span>
           </div>
 
-          <!-- Minimal Lucide Eye / EyeOff Icon Toggle -->
-          <button
-            @click.stop="$emit('toggle-layer-visibility', cal.id)"
-            class="p-1 rounded text-[#62666d] hover:text-white transition-colors shrink-0"
-            :title="isLayerActive(cal.id) ? 'Ocultar Camada' : 'Exibir Camada'"
-          >
-            <IconRenderer
-              :icon="isLayerActive(cal.id) ? 'lucide:Eye' : 'lucide:EyeOff'"
-              :size="14"
-              :color="isLayerActive(cal.id) ? '#ffffff' : '#62666d'"
-            />
-          </button>
+          <div class="flex items-center space-x-1">
+            <!-- Visibility Eye Toggle -->
+            <button
+              @click.stop="$emit('toggle-layer-visibility', cal.id)"
+              class="p-1 rounded text-[#8a8f98] hover:text-white transition-colors"
+              :title="cal.visible ? 'Ocultar camada' : 'Exibir camada'"
+            >
+              <IconRenderer
+                :icon="cal.visible ? 'lucide:Eye' : 'lucide:EyeOff'"
+                :size="14"
+                :color="cal.visible ? undefined : '#62666d'"
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Biblioteca de Modelos -->
-    <div class="flex-1 flex flex-col min-h-0 space-y-2">
-      <div class="flex items-center justify-between px-1 h-6">
-        <div class="flex items-center space-x-1.5 min-w-0">
-          <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider leading-none">
-            Modelos
-          </span>
-          <span class="text-[10px] font-mono text-[#62666d]">({{ models.length }})</span>
-        </div>
+    <!-- Rich Preset Models Library -->
+    <div class="flex-1 flex flex-col p-3 min-h-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">Biblioteca de Modelos</span>
         <button
           @click="$emit('open-create-modal')"
-          class="px-2.5 py-1 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-[11px] font-medium flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
-          title="Criar Novo Modelo"
+          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium px-2.5 py-1 rounded-[6px] text-xs transition-all cursor-pointer shadow-xs"
         >
-          <span>+ Novo Modelo</span>
+          + novo modelo
         </button>
       </div>
 
-      <!-- Models Cards List -->
-      <div class="flex-1 overflow-y-auto space-y-2 pr-0.5">
+      <!-- Models List Cards -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1">
         <div
           v-for="model in models"
           :key="model.id"
+          @pointerdown="onPointerDownModel($event, model)"
           @click="$emit('apply-model', model.id)"
-          class="group relative flex flex-col p-2.5 rounded-[8px] border border-[#23252a] bg-[#0f1011] hover:bg-[#161718] hover:border-[#383b3f] transition-all cursor-pointer shadow-xs"
+          class="p-2.5 rounded-[8px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs hover:shadow-md"
+          :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
         >
-          <!-- Top Row: Icon, Name, Category & Color -->
+          <!-- Top Row: Icon, Name & Category Tag -->
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center space-x-2 min-w-0">
-              <IconRenderer :icon="model.emoji" :size="15" :color="model.color" />
+              <div class="p-1 rounded bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
+                <IconRenderer :icon="model.emoji || 'lucide:Bookmark'" :size="14" :color="model.color" />
+              </div>
               <span class="text-xs font-medium text-white truncate group-hover:text-white transition-colors">
                 {{ model.name }}
               </span>
@@ -128,7 +139,7 @@
               {{ getModelDescription(model) }}
             </span>
             <span v-else class="italic text-[9px] text-[#62666d]">
-              Modelo
+              Arraste p/ o dia
             </span>
 
             <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-opacity">
@@ -165,6 +176,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
+import { DragService } from '@cansche/application';
 import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{
@@ -184,33 +196,43 @@ defineEmits([
   'delete-model',
 ]);
 
-const sortedCalendars = computed(() => {
-  return [...props.calendars].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-});
+function onPointerDownModel(event: PointerEvent, model: Model) {
+  if (event.button !== 0) return;
+  const target = event.target as HTMLElement;
+  if (target.closest('button')) return;
 
-function isLayerActive(id: string): boolean {
-  return (props.activeCalendarIds || []).includes(id);
+  DragService.startPotentialDrag({
+    type: 'model',
+    modelId: model.id,
+    name: model.name,
+    emoji: model.emoji,
+    color: model.color,
+    startTime: model.schedule?.startTime || (model as any).startTime,
+  }, event);
 }
 
-function getModelStartTime(model: Model): string | undefined {
-  return model.schedule?.startTime || (model as any).startTime;
+function isDraggingThisModel(modelId: string): boolean {
+  const st = DragService.state;
+  return st.isDragging && st.item?.type === 'model' && st.item.modelId === modelId;
 }
 
-function getModelEndTime(model: Model): string | undefined {
-  return model.schedule?.endTime || (model as any).endTime || '23:59';
+function getModelStartTime(m: Model): string {
+  return m.schedule?.startTime || (m as any).startTime || '';
 }
 
-function getModelLocation(model: Model): string | undefined {
-  return model.content?.location || (model as any).location;
+function getModelEndTime(m: Model): string {
+  return m.schedule?.endTime || (m as any).endTime || '';
 }
 
-function getModelDescription(model: Model): string | undefined {
-  return model.content?.description || (model as any).description;
+function getModelLocation(m: Model): string {
+  return m.content?.location || (m as any).location || '';
 }
 
-function getChecklistCount(model: Model): number {
-  if (model.content?.checklistTemplate) return model.content.checklistTemplate.length;
-  if ((model as any).checklist) return (model as any).checklist.length;
-  return 0;
+function getModelDescription(m: Model): string {
+  return m.content?.description || (m as any).description || '';
+}
+
+function getChecklistCount(m: Model): number {
+  return m.content?.checklistTemplate?.length || (m as any).checklist?.length || 0;
 }
 </script>

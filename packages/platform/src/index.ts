@@ -50,3 +50,5 @@ export class WebPlatformAdapter implements PlatformAdapter {
     }
   }
 }
+
+export { WebPlatformAdapter as DesktopPlatformAdapter };

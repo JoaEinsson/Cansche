@@ -1,1 +1,1 @@
-export * from './SelectionService';
+export * from './index.ts';

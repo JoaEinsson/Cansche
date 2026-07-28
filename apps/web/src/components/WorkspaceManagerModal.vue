@@ -27,7 +27,7 @@
           <span class="text-xs">Calendário</span>
         </button>
 
-        <label class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] text-white font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center cursor-pointer transition-all leading-tight">
+        <label for="ws-file-import" class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] text-white font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center cursor-pointer transition-all leading-tight">
           <div class="flex items-center gap-1.5 text-xs font-medium">
             <svg class="w-3.5 h-3.5 text-[#8a8f98]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -35,7 +35,7 @@
             <span>Importar</span>
           </div>
           <span class="text-[11px] text-[#8a8f98] font-mono mt-0.5">(.cansche)</span>
-          <input type="file" accept=".json,.cansche" class="hidden" @change="handleFileImport" />
+          <input id="ws-file-import" name="fileImport" type="file" accept=".json,.cansche" class="hidden" @change="handleFileImport" />
         </label>
 
         <button
@@ -56,8 +56,10 @@
       <div v-if="showCreateForm" class="p-3.5 bg-[#161718] border border-[#23252a] rounded-[12px] space-y-3">
         <div class="grid grid-cols-3 gap-3">
           <div class="col-span-2">
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Nome do Calendário</label>
+            <label for="new-cal-name" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Nome do Calendário</label>
             <input
+              id="new-cal-name"
+              name="newCalendarName"
               v-model="newCalName"
               type="text"
               placeholder="ex: 📚 Faculdade 2026"
@@ -65,8 +67,10 @@
             />
           </div>
           <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor da Camada</label>
+            <label for="new-cal-color" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor da Camada</label>
             <input
+              id="new-cal-color"
+              name="newCalendarColor"
               v-model="newCalColor"
               type="color"
               class="w-full h-8 bg-[#08090a] border border-[#23252a] rounded-[6px] p-0.5 cursor-pointer"

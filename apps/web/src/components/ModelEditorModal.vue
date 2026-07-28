@@ -29,8 +29,10 @@
         <!-- Name & Category -->
         <div class="grid grid-cols-3 gap-3">
           <div class="col-span-2">
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Nome do Modelo *</label>
+            <label for="model-name" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Nome do Modelo *</label>
             <input
+              id="model-name"
+              name="modelName"
               v-model="form.name"
               type="text"
               placeholder="ex: Aula Faculdade, Trabalho Remoto"
@@ -38,8 +40,10 @@
             />
           </div>
           <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Categoria</label>
+            <label for="model-category" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Categoria</label>
             <input
+              id="model-category"
+              name="modelCategory"
               v-model="form.category"
               type="text"
               placeholder="ex: Estudo"
@@ -51,7 +55,7 @@
         <!-- Icon & Color Picker -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-[#d0d6e0] font-medium block text-[11px]">Ícone</label>
+            <span class="text-[#d0d6e0] font-medium block text-[11px]">Ícone</span>
             <button
               type="button"
               @click="showEmojiOption = !showEmojiOption"
@@ -79,8 +83,10 @@
             <!-- Hidden / Collapsible Emoji Field -->
             <div>
               <div v-if="showEmojiOption" class="space-y-1">
-                <label class="text-[#8a8f98] font-medium block text-[10px]">Emoji</label>
+                <label for="custom-emoji-input" class="text-[#8a8f98] font-medium block text-[10px]">Emoji</label>
                 <input
+                  id="custom-emoji-input"
+                  name="customEmoji"
                   v-model="customEmoji"
                   type="text"
                   placeholder="ex: 🚀"
@@ -90,8 +96,10 @@
               </div>
             </div>
             <div>
-              <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor do Modelo</label>
+              <label for="model-color" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor do Modelo</label>
               <input
+                id="model-color"
+                name="modelColor"
                 v-model="form.color"
                 type="color"
                 class="w-full h-8 bg-[#08090a] border border-[#23252a] rounded-[6px] p-0.5 cursor-pointer"
@@ -103,24 +111,30 @@
         <!-- Time Range & Location -->
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Início</label>
+            <label for="model-start-time" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Início</label>
             <input
+              id="model-start-time"
+              name="startTime"
               v-model="form.startTime"
               type="time"
               class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
             />
           </div>
           <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Término</label>
+            <label for="model-end-time" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Término</label>
             <input
+              id="model-end-time"
+              name="endTime"
               v-model="form.endTime"
               type="time"
               class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
             />
           </div>
           <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Local</label>
+            <label for="model-location" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Local</label>
             <input
+              id="model-location"
+              name="location"
               v-model="form.location"
               type="text"
               placeholder="ex: Campus"
@@ -131,10 +145,10 @@
 
         <!-- Checklist Template -->
         <div>
-          <label class="text-[#d0d6e0] font-medium block mb-1 flex items-center justify-between text-[11px]">
-            <span>Checklist Padrão (Tarefas)</span>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[#d0d6e0] font-medium text-[11px]">Checklist Padrão (Tarefas)</span>
             <button @click="addChecklistItem" type="button" class="text-[11px] text-white hover:underline font-medium">+ Adicionar Item</button>
-          </label>
+          </div>
           
           <div class="space-y-1.5 max-h-24 overflow-y-auto pr-1">
             <div
@@ -142,7 +156,10 @@
               :key="index"
               class="flex items-center space-x-2"
             >
+              <label :for="'checklist-item-' + index" class="sr-only">Tarefa {{ index + 1 }}</label>
               <input
+                :id="'checklist-item-' + index"
+                :name="'checklistItem_' + index"
                 v-model="form.checklistTemplate[index]"
                 type="text"
                 placeholder="ex: Revisar conteúdo da aula"
@@ -159,8 +176,10 @@
 
         <!-- Notes / Description -->
         <div>
-          <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Observações / Descrição</label>
+          <label for="model-description" class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Observações / Descrição</label>
           <textarea
+            id="model-description"
+            name="description"
             v-model="form.description"
             rows="2"
             placeholder="Instruções padrão para este modelo..."
@@ -272,6 +291,7 @@ watch(
       showEmojiOption.value = false;
       customEmoji.value = '';
       form.value = {
+        id: undefined,
         name: '',
         emoji: 'lucide:GraduationCap',
         color: '#5e6ad2',

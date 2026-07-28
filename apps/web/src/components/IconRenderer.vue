@@ -231,6 +231,73 @@
       <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
     </svg>
 
+    <svg
+      v-else-if="effectiveIconName === 'FileText'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a1 1 0 0 0 1 1h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'CheckSquare'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <polyline points="9 11 12 14 22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Layers'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'ChevronRight'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+
     <!-- Eye / EyeOff icons -->
     <svg
       v-else-if="effectiveIconName === 'Eye'"
@@ -333,6 +400,10 @@ const knownLucideIcons = new Set([
   'Clock',
   'Calendar',
   'Bookmark',
+  'FileText',
+  'CheckSquare',
+  'Layers',
+  'ChevronRight',
   'Eye',
   'EyeOff',
 ]);
@@ -354,7 +425,6 @@ const effectiveIconName = computed(() => {
 
 const isRealEmoji = computed(() => {
   if (!props.icon || effectiveIconName.value !== '') return false;
-  // Check if string contains actual unicode emoji characters (code point > 127)
   return Array.from(props.icon).some((char) => (char.codePointAt(0) || 0) > 127);
 });
 </script>
