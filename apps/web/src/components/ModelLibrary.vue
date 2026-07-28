@@ -1,17 +1,17 @@
 <template>
   <aside class="w-64 bg-[#08090a] border-r border-[#23252a] flex flex-col h-full shrink-0 select-none p-3 space-y-4">
-    <!-- Section 1: Camadas Visíveis (Layers) -->
+    <!-- Section 1: Camadas -->
     <div class="space-y-2 border-b border-[#23252a] pb-3">
-      <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">
-          Camadas (Layers)
+      <div class="flex items-center justify-between px-1 h-6">
+        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider leading-none">
+          Camadas
         </span>
         <button
           @click="$emit('open-workspace-manager')"
-          class="text-[10px] text-[#8a8f98] hover:text-white transition-colors font-mono"
+          class="px-2 py-0.5 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-[10px] font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
           title="Gerenciar Workspace"
         >
-          ⚙️ Workspace
+          Workspace
         </button>
       </div>
 
@@ -36,31 +36,34 @@
             </span>
           </div>
 
-          <!-- Layer Visibility Toggle Eye Icon -->
+          <!-- Minimal Lucide Eye / EyeOff Icon Toggle -->
           <button
             @click.stop="$emit('toggle-layer-visibility', cal.id)"
             class="p-1 rounded text-[#62666d] hover:text-white transition-colors shrink-0"
             :title="isLayerActive(cal.id) ? 'Ocultar Camada' : 'Exibir Camada'"
           >
-            <span v-if="isLayerActive(cal.id)" class="text-xs">👁️</span>
-            <span v-else class="text-xs opacity-40">🙈</span>
+            <IconRenderer
+              :icon="isLayerActive(cal.id) ? 'lucide:Eye' : 'lucide:EyeOff'"
+              :size="14"
+              :color="isLayerActive(cal.id) ? '#ffffff' : '#62666d'"
+            />
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Biblioteca de Modelos do Calendário em Edição -->
+    <!-- Section 2: Biblioteca de Modelos -->
     <div class="flex-1 flex flex-col min-h-0 space-y-2">
-      <div class="flex items-center justify-between px-1">
-        <div class="flex items-center space-x-1.5">
-          <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">
-            Modelos (Edição)
+      <div class="flex items-center justify-between px-1 h-6">
+        <div class="flex items-center space-x-1.5 min-w-0">
+          <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider leading-none">
+            Modelos
           </span>
           <span class="text-[10px] font-mono text-[#62666d]">({{ models.length }})</span>
         </div>
         <button
           @click="$emit('open-create-modal')"
-          class="px-2.5 py-1 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-[11px] font-medium flex items-center gap-1 transition-all shadow-xs cursor-pointer"
+          class="px-2.5 py-1 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-[11px] font-medium flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
           title="Criar Novo Modelo"
         >
           <span>+ Novo Modelo</span>
@@ -75,10 +78,10 @@
           @click="$emit('apply-model', model.id)"
           class="group relative flex flex-col p-2.5 rounded-[8px] border border-[#23252a] bg-[#0f1011] hover:bg-[#161718] hover:border-[#383b3f] transition-all cursor-pointer shadow-xs"
         >
-          <!-- Top Row: Emoji, Name, Category & Color -->
+          <!-- Top Row: Icon, Name, Category & Color -->
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center space-x-2 min-w-0">
-              <span class="text-base shrink-0 leading-none">{{ model.emoji }}</span>
+              <IconRenderer :icon="model.emoji" :size="15" :color="model.color" />
               <span class="text-xs font-medium text-white truncate group-hover:text-white transition-colors">
                 {{ model.name }}
               </span>
@@ -110,8 +113,9 @@
               {{ getModelStartTime(model) }} - {{ getModelEndTime(model) }}
             </span>
 
-            <span v-if="getModelLocation(model)" class="truncate text-[#8a8f98]">
-              📍 {{ getModelLocation(model) }}
+            <span v-if="getModelLocation(model)" class="flex items-center gap-1 truncate text-[#8a8f98]">
+              <IconRenderer icon="lucide:MapPin" :size="11" color="#8a8f98" />
+              <span class="truncate">{{ getModelLocation(model) }}</span>
             </span>
           </div>
 
@@ -161,6 +165,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
+import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{
   calendars: Calendar[];

@@ -4,7 +4,9 @@
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-[#23252a] pb-4">
         <div class="flex items-center space-x-2.5">
-          <span class="text-lg leading-none p-1.5 rounded-[6px] bg-[#161718] border border-[#23252a]">{{ form.emoji || '📌' }}</span>
+          <div class="p-2 rounded-[6px] bg-[#161718] border border-[#23252a] flex items-center justify-center">
+            <IconRenderer :icon="form.emoji || 'lucide:Bookmark'" :size="18" :color="form.color || '#ffffff'" />
+          </div>
           <div>
             <h3 class="font-medium text-sm text-white tracking-tight">
               {{ isEditing ? 'Editar Modelo' : 'Criar Novo Modelo' }}
@@ -46,24 +48,55 @@
           </div>
         </div>
 
-        <!-- Emoji & Color -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Emoji / Ícone</label>
-            <input
-              v-model="form.emoji"
-              type="text"
-              maxLength="2"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-white"
-            />
+        <!-- Icon & Color Picker -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[#d0d6e0] font-medium block text-[11px]">Ícone</label>
+            <button
+              type="button"
+              @click="showEmojiOption = !showEmojiOption"
+              class="text-[10px] text-[#8a8f98] hover:text-white transition-colors font-mono"
+            >
+              {{ showEmojiOption ? '— Ocultar Emoji' : '+ Emoji' }}
+            </button>
           </div>
-          <div>
-            <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor do Modelo</label>
-            <input
-              v-model="form.color"
-              type="color"
-              class="w-full h-9 bg-[#08090a] border border-[#23252a] rounded-[6px] p-1 cursor-pointer"
-            />
+
+          <!-- Lucide Icon Picker Grid -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button
+              v-for="iconName in presetIcons"
+              :key="iconName"
+              type="button"
+              @click="selectLucideIcon(iconName)"
+              class="p-2 rounded-[6px] border transition-all cursor-pointer flex items-center justify-center"
+              :class="form.emoji === 'lucide:' + iconName ? 'bg-[#161718] border-white text-white shadow-xs' : 'bg-[#08090a] border-[#23252a] text-[#8a8f98] hover:border-[#383b3f] hover:text-white'"
+            >
+              <IconRenderer :icon="'lucide:' + iconName" :size="16" :color="form.emoji === 'lucide:' + iconName ? form.color : undefined" />
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <!-- Hidden / Collapsible Emoji Field -->
+            <div>
+              <div v-if="showEmojiOption" class="space-y-1">
+                <label class="text-[#8a8f98] font-medium block text-[10px]">Emoji</label>
+                <input
+                  v-model="customEmoji"
+                  type="text"
+                  placeholder="ex: 🚀"
+                  @input="onCustomEmojiInput"
+                  class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs focus:outline-none focus:border-white font-mono"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="text-[#d0d6e0] font-medium block mb-1 text-[11px]">Cor do Modelo</label>
+              <input
+                v-model="form.color"
+                type="color"
+                class="w-full h-8 bg-[#08090a] border border-[#23252a] rounded-[6px] p-0.5 cursor-pointer"
+              />
+            </div>
           </div>
         </div>
 
@@ -158,6 +191,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { Model } from '@cansche/domain';
+import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -166,7 +200,26 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'save']);
 
+const presetIcons = [
+  'GraduationCap',
+  'BookOpen',
+  'Briefcase',
+  'Dumbbell',
+  'Code',
+  'Heart',
+  'Coffee',
+  'Pin',
+  'Star',
+  'Zap',
+  'Clock',
+  'Calendar',
+  'Bookmark',
+];
+
 const isEditing = ref(false);
+const showEmojiOption = ref(false);
+const customEmoji = ref('');
+
 const form = ref<{
   id?: string;
   name: string;
@@ -180,7 +233,7 @@ const form = ref<{
   checklistTemplate: string[];
 }>({
   name: '',
-  emoji: '📚',
+  emoji: 'lucide:GraduationCap',
   color: '#5e6ad2',
   category: '',
   startTime: '',
@@ -195,10 +248,13 @@ watch(
   (model) => {
     if (model) {
       isEditing.value = true;
+      const isEmoji = !!(model.emoji && !model.emoji.startsWith('lucide:'));
+      showEmojiOption.value = isEmoji;
+      customEmoji.value = isEmoji ? model.emoji : '';
       form.value = {
         id: model.id,
         name: model.name || '',
-        emoji: model.emoji || '📚',
+        emoji: model.emoji || 'lucide:Bookmark',
         color: model.color || '#5e6ad2',
         category: model.metadata?.category || (model as any).category || '',
         startTime: model.schedule?.startTime || (model as any).startTime || '',
@@ -213,9 +269,11 @@ watch(
       };
     } else {
       isEditing.value = false;
+      showEmojiOption.value = false;
+      customEmoji.value = '';
       form.value = {
         name: '',
-        emoji: '📚',
+        emoji: 'lucide:GraduationCap',
         color: '#5e6ad2',
         category: '',
         startTime: '',
@@ -228,6 +286,17 @@ watch(
   },
   { immediate: true }
 );
+
+function selectLucideIcon(iconName: string) {
+  form.value.emoji = 'lucide:' + iconName;
+  customEmoji.value = '';
+}
+
+function onCustomEmojiInput() {
+  if (customEmoji.value.trim()) {
+    form.value.emoji = customEmoji.value.trim();
+  }
+}
 
 function addChecklistItem() {
   form.value.checklistTemplate.push('');
@@ -246,7 +315,7 @@ function save() {
   const modelData: Model = {
     id: form.value.id || '',
     name: form.value.name.trim(),
-    emoji: form.value.emoji || '📚',
+    emoji: form.value.emoji || 'lucide:Bookmark',
     color: form.value.color || '#5e6ad2',
     schedule: {
       startTime: form.value.startTime || undefined,

@@ -76,7 +76,7 @@
                 :style="{ backgroundColor: item.calendarColor }"
                 :title="'Camada: ' + item.calendarName"
               ></span>
-              <span class="text-[11px] shrink-0 leading-none">{{ getEventEmoji(item) }}</span>
+              <IconRenderer :icon="getEventEmoji(item)" :size="13" :color="getEventColor(item)" />
               <span class="truncate leading-none font-sans text-white font-medium">{{ getEventName(item) }}</span>
             </div>
 
@@ -112,6 +112,7 @@
 import { ref, computed } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
 import { Calendar, Model, CalendarEvent, ChecklistItem } from '@cansche/domain';
+import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{
   currentYear: number;
@@ -199,7 +200,7 @@ function getEventName(item: EventViewItem): string {
 }
 
 function getEventEmoji(item: EventViewItem): string {
-  return item.event.overrides?.emoji || item.model?.emoji || '📌';
+  return item.event.overrides?.emoji || item.model?.emoji || 'lucide:Bookmark';
 }
 
 function getEventColor(item: EventViewItem): string {

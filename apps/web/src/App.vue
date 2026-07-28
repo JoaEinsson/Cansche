@@ -400,7 +400,7 @@ onMounted(async () => {
   if (!activeCal.models || Object.keys(activeCal.models).length === 0) {
     engine.addModel({
       name: 'Aula Faculdade',
-      emoji: '📚',
+      emoji: 'lucide:GraduationCap',
       color: '#5e6ad2',
       schedule: { startTime: '19:00', endTime: '22:30' },
       metadata: { category: 'Estudo' },
@@ -413,7 +413,7 @@ onMounted(async () => {
 
     engine.addModel({
       name: 'Trabalho Remoto',
-      emoji: '💼',
+      emoji: 'lucide:Briefcase',
       color: '#3b82f6',
       schedule: { startTime: '08:00', endTime: '17:00' },
       metadata: { category: 'Trabalho' },
@@ -425,7 +425,7 @@ onMounted(async () => {
 
     engine.addModel({
       name: 'Treino Academia',
-      emoji: '🏋️',
+      emoji: 'lucide:Dumbbell',
       color: '#10b981',
       schedule: { startTime: '07:00', endTime: '08:00' },
       metadata: { category: 'Saúde' },
