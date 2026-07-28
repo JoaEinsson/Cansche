@@ -5,6 +5,8 @@ export * from './HistoryService';
 export * from './ClipboardService';
 export * from './ImportExportService';
 export * from './CalendarEngine';
+export * from './DependencyGraph';
+export * from './ConstraintValidator';
 
 export * from './commands/ApplyModelCommand';
 export * from './commands/ApplyPresetCommand';
@@ -13,3 +15,5 @@ export * from './commands/RemovePresetCommand';
 export * from './commands/ClearCellsCommand';
 export * from './commands/MoveCommand';
 export * from './commands/PasteCommand';
+export * from './commands/ToggleFavoriteCommand';
+export * from './commands/TagCommands';

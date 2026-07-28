@@ -78,16 +78,29 @@
       <!-- Models List Cards -->
       <div class="flex-1 overflow-y-auto space-y-2 pr-1">
         <div
-          v-for="model in models"
+          v-for="model in sortedModels"
           :key="model.id"
           @pointerdown="onPointerDownModel($event, model)"
           @click="$emit('apply-model', model.id)"
           class="p-2.5 rounded-[8px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs hover:shadow-md"
           :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
         >
-          <!-- Top Row: Icon, Name & Category Tag -->
+          <!-- Top Row: Icon, Name, Star & Category Tag -->
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center space-x-2 min-w-0">
+              <!-- Favorite Star Button -->
+              <button
+                @click.stop="$emit('toggle-favorite', model.id)"
+                class="p-0.5 text-[#8a8f98] hover:text-amber-400 transition-colors cursor-pointer"
+                :title="model.favorite ? 'Remover dos favoritos' : 'Favoritar modelo'"
+              >
+                <IconRenderer
+                  icon="lucide:Star"
+                  :size="13"
+                  :color="model.favorite ? '#f59e0b' : '#62666d'"
+                />
+              </button>
+
               <div class="p-1 rounded bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
                 <IconRenderer :icon="model.emoji || 'lucide:Bookmark'" :size="14" :color="model.color" />
               </div>
@@ -167,6 +180,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
 import { DragService } from '@cansche/application';
 import IconRenderer from './IconRenderer.vue';
@@ -178,7 +192,7 @@ const props = defineProps<{
   models: Model[];
 }>();
 
-defineEmits([
+const emit = defineEmits([
   'select-editing-calendar',
   'toggle-layer-visibility',
   'open-workspace-manager',
@@ -186,7 +200,19 @@ defineEmits([
   'open-create-modal',
   'edit-model',
   'delete-model',
+  'toggle-favorite',
 ]);
+
+const sortedModels = computed(() => {
+  return [...props.models].sort((a, b) => {
+    if (a.favorite && !b.favorite) return -1;
+    if (!a.favorite && b.favorite) return 1;
+    const usageA = a.usageCount || 0;
+    const usageB = b.usageCount || 0;
+    if (usageA !== usageB) return usageB - usageA;
+    return a.name.localeCompare(b.name);
+  });
+});
 
 function onPointerDownModel(event: PointerEvent, model: Model) {
   if (event.button !== 0) return;

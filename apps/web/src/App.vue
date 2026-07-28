@@ -10,6 +10,7 @@
       @today="goToToday"
       @undo="handleUndo"
       @redo="handleRedo"
+      @open-command-palette="openCommandPalette"
     />
 
     <!-- Main Workspace Layout -->
@@ -27,6 +28,7 @@
         @open-create-modal="handleOpenCreateModal"
         @edit-model="handleEditModel"
         @delete-model="handleDeleteModel"
+        @toggle-favorite="handleToggleFavorite"
       />
 
       <!-- Center: Calendar Grid View (Consolidates all visible layers) -->
@@ -64,6 +66,9 @@
     <!-- Drag & Drop Floating Overlay -->
     <DragOverlay />
 
+    <!-- Raycast-style Command Palette (Ctrl+K) -->
+    <CommandPalette />
+
     <!-- Rich Model Editor Modal -->
     <ModelEditorModal
       :is-open="isModalOpen"
@@ -93,11 +98,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
 import { Calendar, Model, CalendarEvent } from '@cansche/domain';
-import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand } from '@cansche/engine';
+import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator } from '@cansche/engine';
 import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
 import { DesktopPlatformAdapter } from '@cansche/platform';
-import { ApplicationImportExportService, BackupService, NotificationService, InspectorService, DragService } from '@cansche/application';
+import { ApplicationImportExportService, BackupService, NotificationService, InspectorService, DragService, CommandPaletteService } from '@cansche/application';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';
@@ -107,6 +112,7 @@ import SmartSelectionToolbar from './components/SmartSelectionToolbar.vue';
 import ModelEditorModal from './components/ModelEditorModal.vue';
 import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
 import DragOverlay from './components/DragOverlay.vue';
+import CommandPalette from './components/CommandPalette.vue';
 
 // Core Architecture Services Initialization
 const repository = new LocalStorageRepository();
@@ -257,11 +263,27 @@ function handleDeleteModel(modelId: string) {
   autoSave();
 }
 
+function handleToggleFavorite(modelId: string) {
+  engine.execute(new ToggleFavoriteCommand(modelId));
+  syncState();
+  autoSave();
+}
+
 function handleApplyModel(modelId: string) {
   if (selectedDates.value.length === 0) return;
+
+  const targetModel = models.value.find(m => m.id === modelId);
+  if (targetModel) {
+    for (const date of selectedDates.value) {
+      const validation = ConstraintValidator.validateModelApplication(targetModel, date, engine.getWorkspace());
+      if (!validation.valid && validation.message) {
+        notificationService.notify('Aviso de Restrição', validation.message);
+      }
+    }
+  }
+
   engine.execute(new ApplyModelCommand(selectedDates.value, modelId));
   
-  const targetModel = models.value.find(m => m.id === modelId);
   if (targetModel) {
     notificationService.notifyPresetEvent(
       targetModel.name,
@@ -326,6 +348,78 @@ function handleRedo() {
   autoSave();
 }
 
+function openCommandPalette() {
+  CommandPaletteService.open();
+}
+
+function registerSystemCommands() {
+  CommandPaletteService.setCommands([
+    {
+      id: 'go-today',
+      title: 'Ir para Hoje',
+      subtitle: 'Navegar para a data atual no calendário',
+      keywords: ['hoje', 'today', 'agora', 'data'],
+      icon: 'lucide:Calendar',
+      category: 'Navegação',
+      execute: () => goToToday(),
+    },
+    {
+      id: 'create-model',
+      title: 'Criar Novo Modelo',
+      subtitle: 'Abrir formulário de criação de modelo',
+      keywords: ['novo', 'criar', 'modelo', 'adicionar'],
+      icon: 'lucide:Bookmark',
+      category: 'Ações',
+      execute: () => handleOpenCreateModal(),
+    },
+    {
+      id: 'manage-workspace',
+      title: 'Gerenciar Workspace e Camadas',
+      subtitle: 'Criar calendários, exportar backups e importar arquivos',
+      keywords: ['workspace', 'camada', 'backup', 'importar', 'exportar'],
+      icon: 'lucide:Layers',
+      category: 'Workspace',
+      execute: () => (isWorkspaceManagerOpen.value = true),
+    },
+    {
+      id: 'export-workspace',
+      title: 'Exportar Backup do Workspace (.cansche)',
+      subtitle: 'Salvar arquivo de backup completo',
+      keywords: ['exportar', 'backup', 'salvar', 'download'],
+      icon: 'lucide:FileText',
+      category: 'Workspace',
+      execute: () => handleExportWorkspace(),
+    },
+    {
+      id: 'select-saturdays',
+      title: 'Selecionar Todos os Sábados',
+      subtitle: 'Selecionar rapidamente todos os sábados do mês',
+      keywords: ['sabado', 'sábados', 'fim de semana', 'selecionar'],
+      icon: 'lucide:CheckSquare',
+      category: 'Filtros',
+      execute: () => handleSelectSaturdays(),
+    },
+    {
+      id: 'select-weekends',
+      title: 'Selecionar Finais de Semana',
+      subtitle: 'Selecionar sábados e domingos do mês atual',
+      keywords: ['fim de semana', 'finais de semana', 'sabado', 'domingo'],
+      icon: 'lucide:CheckSquare',
+      category: 'Filtros',
+      execute: () => handleSelectWeekends(),
+    },
+    {
+      id: 'clear-selection',
+      title: 'Deselecionar Tudo / Limpar Seleção',
+      subtitle: 'Limpar a seleção ativa de células no calendário',
+      keywords: ['deselecionar', 'limpar', 'esc', 'cancelar'],
+      icon: 'lucide:EyeOff',
+      category: 'Ações',
+      execute: () => handleDeselect(),
+    },
+  ]);
+}
+
 async function autoSave() {
   try {
     await repository.saveWorkspace(engine.getWorkspace());
@@ -388,8 +482,15 @@ function handlePointerUp(event: PointerEvent) {
     const { item, hoverDate, isCopyMode } = result;
 
     if (item.type === 'model') {
-      engine.execute(new ApplyModelCommand([hoverDate], item.modelId));
       const targetModel = models.value.find((m) => m.id === item.modelId);
+      if (targetModel) {
+        const validation = ConstraintValidator.validateModelApplication(targetModel, hoverDate, engine.getWorkspace());
+        if (!validation.valid && validation.message) {
+          notificationService.notify('Aviso de Restrição', validation.message);
+        }
+      }
+
+      engine.execute(new ApplyModelCommand([hoverDate], item.modelId));
       if (targetModel) {
         notificationService.notifyPresetEvent(
           targetModel.name,
@@ -417,6 +518,19 @@ function handlePointerUp(event: PointerEvent) {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
+  const isCtrl = event.ctrlKey || event.metaKey;
+
+  // Global Ctrl+K Command Palette Trigger
+  if (isCtrl && event.key.toLowerCase() === 'k') {
+    event.preventDefault();
+    CommandPaletteService.toggle();
+    return;
+  }
+
+  if (CommandPaletteService.isOpen.value) {
+    return;
+  }
+
   if (DragService.state.isDragging) {
     if (event.key === 'Escape') {
       DragService.cancelDrag();
@@ -435,7 +549,6 @@ function handleKeyDown(event: KeyboardEvent) {
     return;
   }
 
-  const isCtrl = event.ctrlKey || event.metaKey;
   if (isCtrl && event.key.toLowerCase() === 'z') {
     event.preventDefault();
     handleUndo();
@@ -468,6 +581,8 @@ onMounted(async () => {
   window.addEventListener('pointerup', handlePointerUp);
   window.addEventListener('keydown', handleKeyDown);
 
+  registerSystemCommands();
+
   const saved = await repository.getWorkspace();
   if (saved && saved.calendars && (saved.editingCalendarId || (saved as any).activeCalendarId)) {
     engine.setWorkspace(saved);
@@ -479,6 +594,7 @@ onMounted(async () => {
       name: 'Aula Faculdade',
       emoji: 'lucide:GraduationCap',
       color: '#5e6ad2',
+      favorite: true,
       schedule: { startTime: '19:00', endTime: '22:30' },
       metadata: { category: 'Estudo' },
       content: {

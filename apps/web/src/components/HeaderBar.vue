@@ -12,37 +12,50 @@
       </div>
     </div>
 
-    <!-- Center: Month Navigation -->
-    <div class="flex items-center space-x-2 bg-[#0f1011] px-2 py-1 rounded-[6px] border border-[#23252a]">
-      <button
-        @click="$emit('prev-month')"
-        class="p-1 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded transition-colors"
-        title="Mês Anterior"
-      >
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+    <!-- Center: Month Navigation & Command Palette Trigger -->
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 bg-[#0f1011] px-2 py-1 rounded-[6px] border border-[#23252a]">
+        <button
+          @click="$emit('prev-month')"
+          class="p-1 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded transition-colors"
+          title="Mês Anterior"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-      <span class="font-semibold text-xs min-w-[120px] text-center text-white uppercase tracking-wide font-mono">
-        {{ currentMonthLabel }}
-      </span>
+        <span class="font-semibold text-xs min-w-[120px] text-center text-white uppercase tracking-wide font-mono">
+          {{ currentMonthLabel }}
+        </span>
 
-      <button
-        @click="$emit('next-month')"
-        class="p-1 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded transition-colors"
-        title="Próximo Mês"
-      >
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+        <button
+          @click="$emit('next-month')"
+          class="p-1 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded transition-colors"
+          title="Próximo Mês"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
 
+        <button
+          @click="$emit('today')"
+          class="px-2 py-0.5 text-[11px] font-medium text-[#d0d6e0] hover:text-white bg-[#161718] hover:bg-[#23252a] rounded transition-colors border border-[#23252a]"
+        >
+          Hoje
+        </button>
+      </div>
+
+      <!-- Command Palette Ctrl+K Quick Trigger -->
       <button
-        @click="$emit('today')"
-        class="px-2 py-0.5 text-[11px] font-medium text-[#d0d6e0] hover:text-white bg-[#161718] hover:bg-[#23252a] rounded transition-colors border border-[#23252a]"
+        @click="$emit('open-command-palette')"
+        class="bg-[#0f1011] hover:bg-[#161718] text-[#8a8f98] hover:text-white border border-[#23252a] hover:border-[#383b3f] px-3 py-1.5 rounded-[6px] flex items-center space-x-2 text-xs transition-colors cursor-pointer"
+        title="Abrir Barra de Comandos (Ctrl+K)"
       >
-        Hoje
+        <IconRenderer icon="lucide:Zap" :size="13" color="#02b8cc" />
+        <span>Comandos</span>
+        <kbd class="text-[9px] font-mono text-[#62666d] bg-[#161718] px-1 rounded border border-[#23252a]">Ctrl+K</kbd>
       </button>
     </div>
 
@@ -80,11 +93,13 @@
 </template>
 
 <script setup lang="ts">
+import IconRenderer from './IconRenderer.vue';
+
 defineProps<{
   currentMonthLabel: string;
   canUndo: boolean;
   canRedo: boolean;
 }>();
 
-defineEmits(['prev-month', 'next-month', 'today', 'undo', 'redo']);
+defineEmits(['prev-month', 'next-month', 'today', 'undo', 'redo', 'open-command-palette']);
 </script>

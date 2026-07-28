@@ -6,11 +6,36 @@ export interface ChecklistItem {
   completed: boolean;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+export interface EventRelationship {
+  id: string;
+  sourceEventId: string;
+  targetEventId: string;
+  type: 'finish-start' | 'start-start' | 'finish-finish';
+}
+
+export interface ModelConstraint {
+  id: string;
+  type: 'weekday' | 'count' | 'interval';
+  params: Record<string, any>;
+}
+
 export interface Model {
   id: string;
   name: string;
   emoji: string;
   color: string;
+  favorite?: boolean;
+  usageCount?: number;
+  lastUsed?: string;
+  tags?: string[]; // Tag IDs
+  priority?: 'low' | 'medium' | 'high';
+  constraints?: ModelConstraint[];
   schedule?: {
     startTime?: string; // e.g. "19:00"
     endTime?: string;   // e.g. "22:30"
@@ -59,12 +84,32 @@ export interface Calendar {
   events: Record<string, CalendarEvent>;
 }
 
+export interface SmartQuery {
+  id: string;
+  name: string;
+  icon?: string;
+  filter: {
+    category?: string;
+    tagId?: string;
+    favorite?: boolean;
+    priority?: 'low' | 'medium' | 'high';
+    calendarId?: string;
+  };
+  sort?: {
+    field: 'name' | 'lastUsed' | 'usageCount' | 'createdAt';
+    direction: 'asc' | 'desc';
+  };
+}
+
 export interface Workspace {
   id: string;
   name: string;
   calendars: Record<string, Calendar>;
   editingCalendarId: string;
   activeCalendarIds: string[];
+  tagLibrary?: Record<string, Tag>;
+  relationships?: EventRelationship[];
+  queries?: SmartQuery[];
 }
 
 export interface ClipboardItem {

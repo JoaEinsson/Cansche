@@ -5,6 +5,7 @@ import { CalendarRepository } from '@cansche/repositories';
 
 export * from './InspectorService';
 export * from './DragService';
+export * from './CommandPaletteService';
 
 export class ApplicationImportExportService {
   constructor(
