@@ -1,29 +1,27 @@
 <template>
   <aside class="w-64 bg-[#0f1011] border-r border-[#23252a] flex flex-col h-full shrink-0 select-none">
-    <!-- Workspace Header & Selector -->
+    <!-- Top Workspace Header -->
     <div class="p-3 border-b border-[#23252a] flex items-center justify-between">
       <button
         @click="$emit('open-workspace-manager')"
-        class="bg-[#161718] hover:bg-[#23252a] border border-[#23252a] hover:border-[#383b3f] text-white font-medium px-3 py-1.5 rounded-[6px] text-xs transition-colors cursor-pointer flex items-center space-x-2"
+        class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium px-3 py-1.5 rounded-[6px] text-xs transition-all shadow-xs cursor-pointer"
       >
-        <span>Workspace</span>
+        Workspace
       </button>
 
       <button
         @click="$emit('open-workspace-manager')"
         class="p-1.5 text-[#8a8f98] hover:text-white hover:bg-[#161718] rounded-[6px] transition-colors"
-        title="Gerenciar Camadas & Workspace"
+        title="Gerenciar Workspace"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
+        <IconRenderer icon="lucide:Layers" :size="15" color="#8a8f98" />
       </button>
     </div>
 
-    <!-- Active Layers / Calendars Section -->
+    <!-- Active Layers Section -->
     <div class="p-3 border-b border-[#23252a] space-y-2">
       <div class="flex items-center justify-between text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">
-        <span>Camadas de Calendário</span>
+        <span>CAMADAS</span>
         <button
           @click="$emit('open-workspace-manager')"
           class="hover:text-white transition-colors lowercase text-[11px]"
@@ -65,15 +63,15 @@
       </div>
     </div>
 
-    <!-- Rich Preset Models Library -->
+    <!-- Models Library Section -->
     <div class="flex-1 flex flex-col p-3 min-h-0">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">Biblioteca de Modelos</span>
+        <span class="text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider">MODELOS</span>
         <button
           @click="$emit('open-create-modal')"
-          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium px-2.5 py-1 rounded-[6px] text-xs transition-all cursor-pointer shadow-xs"
+          class="bg-[#161718] hover:bg-[#23252a] text-white border border-[#23252a] hover:border-[#383b3f] font-medium px-2.5 py-1 rounded-[6px] text-xs transition-colors cursor-pointer whitespace-nowrap"
         >
-          + novo modelo
+          + Novo Modelo
         </button>
       </div>
 
@@ -118,9 +116,7 @@
             class="flex items-center space-x-2 text-[10px] text-[#8a8f98] font-mono mb-1"
           >
             <span v-if="getModelStartTime(model)" class="flex items-center gap-1">
-              <svg class="w-3 h-3 text-[#62666d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <IconRenderer icon="lucide:Clock" :size="11" color="#62666d" />
               {{ getModelStartTime(model) }} - {{ getModelEndTime(model) }}
             </span>
 
@@ -132,8 +128,9 @@
 
           <!-- Bottom Row: Checklist count & Quick Actions -->
           <div class="flex items-center justify-between text-[10px] text-[#62666d] pt-1 border-t border-[#161718]">
-            <span v-if="getChecklistCount(model) > 0">
-              ☑ {{ getChecklistCount(model) }} tarefas
+            <span v-if="getChecklistCount(model) > 0" class="flex items-center gap-1">
+              <IconRenderer icon="lucide:CheckSquare" :size="10" color="#62666d" />
+              <span>{{ getChecklistCount(model) }} tarefas</span>
             </span>
             <span v-else-if="getModelDescription(model)" class="truncate max-w-[120px]">
               {{ getModelDescription(model) }}
@@ -148,18 +145,14 @@
                 class="p-1 text-[#8a8f98] hover:text-white rounded hover:bg-[#23252a] transition-colors"
                 title="Editar Modelo"
               >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                <IconRenderer icon="lucide:Edit2" :size="12" color="#8a8f98" />
               </button>
               <button
                 @click.stop="$emit('delete-model', model.id)"
                 class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors"
                 title="Excluir Modelo"
               >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <IconRenderer icon="lucide:Trash2" :size="12" color="#8a8f98" />
               </button>
             </div>
           </div>
@@ -174,7 +167,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
 import { DragService } from '@cansche/application';
 import IconRenderer from './IconRenderer.vue';
