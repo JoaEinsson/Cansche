@@ -167,6 +167,20 @@ export class CalendarEngine implements EngineContext {
     return ImportExportService.exportWorkspace(this.workspace);
   }
 
+  public importFile(jsonString: string): { type: 'calendar' | 'workspace'; data: Calendar | Workspace } {
+    const imported = ImportExportService.importFile(jsonString);
+    if (imported.type === 'workspace') {
+      this.setWorkspace(imported.data as Workspace);
+    } else if (imported.type === 'calendar') {
+      const cal = imported.data as Calendar;
+      this.workspace.calendars[cal.id] = cal;
+      this.workspace.editingCalendarId = cal.id;
+      this.ensureEditingCalendar();
+      this.onStateChanged.notify(this.workspace);
+    }
+    return imported;
+  }
+
   // EngineContext Implementation
   public setEventsForDate(date: ISODate, events: CalendarEvent[]): void {
     const calendar = this.getActiveCalendar();
