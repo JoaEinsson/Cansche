@@ -184,16 +184,19 @@ const calendarDays = computed(() => {
     });
   }
 
+  let totalEventsInGrid = 0;
   for (let day = 1; day <= totalDays; day++) {
     const d = new Date(year, month, day);
     const iso = toISODate(d);
+    const evts = getEventsForDate(iso);
+    totalEventsInGrid += evts.length;
     days.push({
       date: iso,
       dayNumber: day,
       isCurrentMonth: true,
       isToday: iso === todayISO,
       isSelected: selectedSet.value.has(iso),
-      events: getEventsForDate(iso),
+      events: evts,
     });
   }
 
@@ -211,6 +214,7 @@ const calendarDays = computed(() => {
     });
   }
 
+  console.log(`[CANSCHE DIAG] 6. CalendarGrid re-calculou calendarDays. Total dias: ${days.length}. Total eventos renderizados no mês: ${totalEventsInGrid}`);
   return days;
 });
 
@@ -245,7 +249,7 @@ function cancelHoverCardHide() {
 function onSelectEvent(item: EventViewItem) {
   hoverCardState.value.isOpen = false;
   overflowState.value.isOpen = false;
-  InspectorService.open(item);
+  InspectorService.close();
 }
 
 function onEditEvent(item: EventViewItem) {

@@ -16,21 +16,23 @@
         <span class="px-1.5 py-0.5 rounded-[4px] bg-white font-mono font-bold text-[#08090a] text-[11px] shadow-xs">
           {{ selectedCount }}
         </span>
-        <span class="text-[#8a8f98] text-[11px]">selecionadas</span>
+        <span class="text-[#8a8f98] text-[11px]">
+          {{ selectedCount === 1 ? 'data selecionada' : 'datas selecionadas' }}
+        </span>
       </div>
 
       <!-- Smart Selectors -->
       <div class="flex items-center space-x-1 border-r border-[#23252a] pr-3">
         <button
           @click="$emit('select-saturdays')"
-          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors"
+          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors cursor-pointer"
           title="Selecionar todos os sábados"
         >
           Sábados
         </button>
         <button
           @click="$emit('select-weekends')"
-          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors"
+          class="px-2.5 py-1 rounded-[6px] bg-[#0f1011] hover:bg-[#23252a] text-white border border-[#23252a] text-[11px] transition-colors cursor-pointer"
           title="Selecionar sábados e domingos"
         >
           Finais de Semana
@@ -41,8 +43,8 @@
       <div class="flex items-center space-x-1.5">
         <button
           @click="$emit('copy')"
-          class="px-2.5 py-1 bg-[#0f1011] hover:bg-[#23252a] text-white rounded-[6px] flex items-center space-x-1 border border-[#23252a] text-[11px] transition-colors"
-          title="Copiar células (Ctrl+C)"
+          class="px-2.5 py-1 bg-[#0f1011] hover:bg-[#23252a] text-white rounded-[6px] flex items-center space-x-1 border border-[#23252a] text-[11px] transition-colors cursor-pointer"
+          title="Copiar células selecionadas (Ctrl+C)"
         >
           <span>Copiar</span>
           <kbd class="text-[9px] font-mono text-[#62666d]">^C</kbd>
@@ -53,7 +55,7 @@
           :disabled="!hasClipboard"
           class="px-2.5 py-1 rounded-[6px] flex items-center space-x-1 border text-[11px] transition-colors"
           :class="hasClipboard ? 'bg-[#0f1011] hover:bg-[#23252a] text-white border-[#23252a] cursor-pointer' : 'opacity-40 text-[#62666d] border-transparent cursor-not-allowed'"
-          title="Colar células (Ctrl+V)"
+          title="Colar células copiadas (Ctrl+V)"
         >
           <span>Colar</span>
           <kbd class="text-[9px] font-mono text-[#62666d]">^V</kbd>
@@ -61,8 +63,8 @@
 
         <button
           @click="$emit('clear-cells')"
-          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1 text-[11px] transition-colors"
-          title="Limpar seleção (Del)"
+          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1 text-[11px] transition-colors cursor-pointer"
+          title="Limpar células selecionadas (Del)"
         >
           <span>Limpar</span>
           <kbd class="text-[9px] font-mono text-red-400/70">Del</kbd>
@@ -70,7 +72,7 @@
 
         <button
           @click="$emit('deselect')"
-          class="p-1 text-[#62666d] hover:text-white rounded-[6px] hover:bg-[#23252a] transition-colors"
+          class="p-1 text-[#62666d] hover:text-white rounded-[6px] hover:bg-[#23252a] transition-colors cursor-pointer"
           title="Deselecionar (Esc)"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

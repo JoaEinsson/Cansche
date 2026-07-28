@@ -1,73 +1,57 @@
-import { ISODate } from '@cansche/shared';
-import { Workspace, Calendar, Model, CalendarEvent } from '@cansche/domain';
+import { Workspace, Calendar, Model, ClipboardData, CalendarEvent } from '@cansche/domain';
+import { ISODate, generateId } from '@cansche/shared';
+import { EngineContext } from './EngineContext';
 import { Observable } from './Observable';
 import { HistoryService } from './HistoryService';
-import { ClipboardService, ClipboardData } from './ClipboardService';
-import { Command } from './Command';
-import { EngineContext } from './EngineContext';
+import { ClipboardService } from './ClipboardService';
 import { ImportExportService } from './ImportExportService';
+import { Command } from './Command';
 
 export class CalendarEngine implements EngineContext {
   private workspace: Workspace;
-  private historyService: HistoryService;
-  public clipboardService: ClipboardService;
-  public onStateChanged: Observable<Workspace>;
-
+  public onStateChanged = new Observable<Workspace>();
+  public historyService = new HistoryService();
+  public clipboardService = new ClipboardService();
   private clipboardData: ClipboardData | null = null;
 
   constructor(initialWorkspace?: Workspace) {
-    this.workspace = initialWorkspace || this.createDefaultWorkspace();
-    this.historyService = new HistoryService();
-    this.clipboardService = new ClipboardService();
-    this.onStateChanged = new Observable<Workspace>();
-
+    if (initialWorkspace && initialWorkspace.calendars && Object.keys(initialWorkspace.calendars).length > 0) {
+      this.workspace = initialWorkspace;
+    } else {
+      this.workspace = this.createDefaultWorkspace();
+    }
     this.ensureEditingCalendar();
   }
 
   private createDefaultWorkspace(): Workspace {
-    const defaultCalId = 'default-calendar';
-    const defaultCal: Calendar = {
-      id: defaultCalId,
-      name: 'Meu Calendário',
-      color: '#02b8cc',
-      visible: true,
-      order: 0,
-      models: {},
-      presets: {},
-      cells: {},
-      events: {},
-    };
-
+    const defaultCalId = `cal-${Date.now()}`;
     return {
-      id: 'default-workspace',
-      name: 'Workspace Principal',
+      id: `ws-${Date.now()}`,
+      name: 'Meu Workspace',
       editingCalendarId: defaultCalId,
+      activeCalendarIds: [defaultCalId],
       calendars: {
-        [defaultCalId]: defaultCal,
+        [defaultCalId]: {
+          id: defaultCalId,
+          name: 'Principal',
+          color: '#5e6ad2',
+          order: 0,
+          visible: true,
+          models: {},
+          presets: {},
+          cells: {},
+          events: {},
+        },
       },
     };
   }
 
   private ensureEditingCalendar(): void {
-    if (!this.workspace.calendars) {
-      this.workspace.calendars = {};
-    }
-
-    const keys = Object.keys(this.workspace.calendars);
-    if (keys.length === 0) {
-      const def = this.createDefaultWorkspace();
-      this.workspace = def;
-      return;
-    }
-
-    if (!this.workspace.editingCalendarId || !this.workspace.calendars[this.workspace.editingCalendarId]) {
-      this.workspace.editingCalendarId = keys[0];
-    }
-
-    for (const cal of Object.values(this.workspace.calendars)) {
-      if (!cal.models) cal.models = {};
-      if (!cal.events) cal.events = {};
-      if ((cal as any).presets) cal.models = { ...cal.models, ...(cal as any).presets };
+    const calKeys = Object.keys(this.workspace.calendars);
+    if (calKeys.length > 0) {
+      if (!this.workspace.editingCalendarId || !this.workspace.calendars[this.workspace.editingCalendarId]) {
+        this.workspace.editingCalendarId = calKeys[0];
+      }
     }
   }
 
@@ -75,19 +59,15 @@ export class CalendarEngine implements EngineContext {
     return this.workspace;
   }
 
-  public setWorkspace(ws: Workspace): void {
-    this.workspace = ws;
+  public setWorkspace(workspace: Workspace): void {
+    this.workspace = workspace;
     this.ensureEditingCalendar();
     this.onStateChanged.notify(this.workspace);
   }
 
   public getActiveCalendar(): Calendar {
     this.ensureEditingCalendar();
-    return this.workspace.calendars[this.workspace.editingCalendarId!];
-  }
-
-  public getCalendarsList(): Calendar[] {
-    return Object.values(this.workspace.calendars || {});
+    return this.workspace.calendars[this.workspace.editingCalendarId];
   }
 
   public setEditingCalendar(calendarId: string): void {
@@ -95,6 +75,10 @@ export class CalendarEngine implements EngineContext {
       this.workspace.editingCalendarId = calendarId;
       this.onStateChanged.notify(this.workspace);
     }
+  }
+
+  public getCalendarsList(): Calendar[] {
+    return Object.values(this.workspace.calendars).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   public toggleLayerVisibility(calendarId: string): void {
@@ -158,7 +142,6 @@ export class CalendarEngine implements EngineContext {
     activeCal.models[id] = newModel;
     if (!activeCal.presets) activeCal.presets = {};
     activeCal.presets[id] = newModel as any;
-
     this.onStateChanged.notify(this.workspace);
     return newModel;
   }
@@ -167,34 +150,25 @@ export class CalendarEngine implements EngineContext {
     const activeCal = this.getActiveCalendar();
     if (!activeCal.models) activeCal.models = {};
     activeCal.models[model.id] = model;
-    if (activeCal.presets) activeCal.presets[model.id] = model as any;
-
+    if (!activeCal.presets) activeCal.presets = {};
+    activeCal.presets[model.id] = model as any;
     this.onStateChanged.notify(this.workspace);
   }
 
   public deleteModel(modelId: string): void {
     const activeCal = this.getActiveCalendar();
-    if (activeCal.models) delete activeCal.models[modelId];
-    if (activeCal.presets) delete activeCal.presets[modelId];
-
+    if (activeCal.models && activeCal.models[modelId]) {
+      delete activeCal.models[modelId];
+    }
+    if (activeCal.presets && (activeCal.presets as any)[modelId]) {
+      delete (activeCal.presets as any)[modelId];
+    }
     this.onStateChanged.notify(this.workspace);
   }
 
   public getModelsList(): Model[] {
     const activeCal = this.getActiveCalendar();
-    return Object.values(activeCal.models || activeCal.presets || {});
-  }
-
-  public importCalendar(calendar: Calendar): void {
-    this.workspace.calendars[calendar.id] = calendar;
-    this.workspace.editingCalendarId = calendar.id;
-    this.onStateChanged.notify(this.workspace);
-  }
-
-  public importWorkspace(ws: Workspace): void {
-    this.workspace = ws;
-    this.ensureEditingCalendar();
-    this.onStateChanged.notify(this.workspace);
+    return Object.values(activeCal.models || (activeCal as any).presets || {});
   }
 
   public exportCalendar(calendarId?: string): string {
@@ -211,6 +185,9 @@ export class CalendarEngine implements EngineContext {
     const calendar = this.getActiveCalendar();
     if (!calendar.events) calendar.events = {};
 
+    const beforeCount = Object.keys(calendar.events).length;
+    console.log(`[CANSCHE DIAG] 4. setEventsForDate executado para ${date}. Total eventos no calendário ANTES: ${beforeCount}`);
+
     for (const [id, evt] of Object.entries(calendar.events)) {
       if (evt.date === date) {
         delete calendar.events[id];
@@ -220,6 +197,9 @@ export class CalendarEngine implements EngineContext {
     for (const evt of events) {
       calendar.events[evt.id] = evt;
     }
+
+    const afterCount = Object.keys(calendar.events).length;
+    console.log(`[CANSCHE DIAG] 4a. setEventsForDate concluído para ${date}. Total eventos no calendário DEPOIS: ${afterCount}`);
   }
 
   public removeEvent(eventId: string): void {

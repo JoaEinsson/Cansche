@@ -53,7 +53,7 @@
       <!-- Floating Toolbar for Batch Actions -->
       <SmartSelectionToolbar
         :selected-count="selectedDates.length"
-        :has-clipboard="!!clipboard"
+        :has-clipboard="hasClipboard"
         @select-saturdays="handleSelectSaturdays"
         @select-weekends="handleSelectWeekends"
         @copy="handleCopy"
@@ -97,7 +97,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
-import { Calendar, Model, CalendarEvent } from '@cansche/domain';
+import { Calendar, Model, CalendarEvent, ClipboardData } from '@cansche/domain';
 import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator } from '@cansche/engine';
 import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
@@ -129,6 +129,7 @@ const workspace = ref(engine.getWorkspace());
 const currentYear = ref(new Date().getFullYear());
 const currentMonth = ref(new Date().getMonth());
 const selectedDates = ref<ISODate[]>([]);
+const clipboardData = ref<ClipboardData | null>(engine.getClipboard());
 
 const isModalOpen = ref(false);
 const editingModel = ref<Model | null>(null);
@@ -170,7 +171,10 @@ const models = computed(() => {
 
 const canUndo = computed(() => engine.canUndo());
 const canRedo = computed(() => engine.canRedo());
-const clipboard = computed(() => engine.getClipboard());
+const hasClipboard = computed(() => {
+  if (!clipboardData.value || !clipboardData.value.items) return false;
+  return clipboardData.value.items.some((it) => it.events && it.events.length > 0);
+});
 
 function syncState() {
   workspace.value = { ...engine.getWorkspace() };
@@ -323,13 +327,18 @@ function handleClearCells() {
 
 function handleCopy() {
   if (selectedDates.value.length === 0) return;
-  engine.clipboardService.copy(selectedDates.value, engine);
+  const res = engine.clipboardService.copy(selectedDates.value, engine);
+  clipboardData.value = res;
+  const totalEvts = res.items.reduce((acc, it) => acc + (it.events?.length || 0), 0);
+  if (totalEvts > 0) {
+    notificationService.notify('Copiado', `${totalEvts} evento(s) copiado(s).`);
+  }
   syncState();
 }
 
 function handlePaste() {
-  const clip = engine.getClipboard();
-  if (!clip || selectedDates.value.length === 0) return;
+  const clip = clipboardData.value || engine.getClipboard();
+  if (!clip || !clip.items || clip.items.length === 0 || selectedDates.value.length === 0) return;
   const targetDate = selectedDates.value[0];
   engine.execute(new PasteCommand(targetDate, clip));
   syncState();
@@ -362,6 +371,24 @@ function registerSystemCommands() {
       icon: 'lucide:Calendar',
       category: 'Navegação',
       execute: () => goToToday(),
+    },
+    {
+      id: 'copy-cells',
+      title: 'Copiar Células Selecionadas (Ctrl+C)',
+      subtitle: 'Copiar o conteúdo dos dias selecionados',
+      keywords: ['copiar', 'ctrl+c', 'copy'],
+      icon: 'lucide:FileText',
+      category: 'Ações',
+      execute: () => handleCopy(),
+    },
+    {
+      id: 'paste-cells',
+      title: 'Colar Células Copiadas (Ctrl+V)',
+      subtitle: 'Colar o conteúdo copiado na data selecionada',
+      keywords: ['colar', 'ctrl+v', 'paste'],
+      icon: 'lucide:FileText',
+      category: 'Ações',
+      execute: () => handlePaste(),
     },
     {
       id: 'create-model',
