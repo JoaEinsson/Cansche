@@ -38,8 +38,6 @@ export class CalendarEngine implements EngineContext {
           order: 0,
           visible: true,
           models: {},
-          presets: {},
-          cells: {},
           events: {},
         },
       },
@@ -98,8 +96,6 @@ export class CalendarEngine implements EngineContext {
       visible: true,
       order: Object.keys(this.workspace.calendars).length,
       models: {},
-      presets: {},
-      cells: {},
       events: {},
     };
     this.workspace.calendars[id] = newCal;
@@ -140,8 +136,6 @@ export class CalendarEngine implements EngineContext {
     const id = `model-${Date.now()}`;
     const newModel: Model = { ...model, id };
     activeCal.models[id] = newModel;
-    if (!activeCal.presets) activeCal.presets = {};
-    activeCal.presets[id] = newModel as any;
     this.onStateChanged.notify(this.workspace);
     return newModel;
   }
@@ -150,8 +144,6 @@ export class CalendarEngine implements EngineContext {
     const activeCal = this.getActiveCalendar();
     if (!activeCal.models) activeCal.models = {};
     activeCal.models[model.id] = model;
-    if (!activeCal.presets) activeCal.presets = {};
-    activeCal.presets[model.id] = model as any;
     this.onStateChanged.notify(this.workspace);
   }
 
@@ -160,15 +152,12 @@ export class CalendarEngine implements EngineContext {
     if (activeCal.models && activeCal.models[modelId]) {
       delete activeCal.models[modelId];
     }
-    if (activeCal.presets && (activeCal.presets as any)[modelId]) {
-      delete (activeCal.presets as any)[modelId];
-    }
     this.onStateChanged.notify(this.workspace);
   }
 
   public getModelsList(): Model[] {
     const activeCal = this.getActiveCalendar();
-    return Object.values(activeCal.models || (activeCal as any).presets || {});
+    return Object.values(activeCal.models || {});
   }
 
   public exportCalendar(calendarId?: string): string {

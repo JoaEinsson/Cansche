@@ -1,52 +1,33 @@
 <template>
   <Teleport to="body">
     <div
-      v-if="dragState.isDragging && dragState.item"
-      class="fixed z-50 pointer-events-none transition-transform duration-75 ease-out shadow-2xl flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#161718] border border-white/20 text-white font-medium text-xs backdrop-blur-md"
+      v-if="state.isDragging && state.item"
+      class="fixed pointer-events-none z-50 transform -translate-x-1/2 -translate-y-1/2 select-none"
       :style="{
-        left: dragState.currentPos.x + 12 + 'px',
-        top: dragState.currentPos.y + 12 + 'px',
+        left: state.currentPos.x + 'px',
+        top: state.currentPos.y + 'px',
       }"
     >
-      <!-- Icon -->
-      <IconRenderer
-        :icon="dragState.item.emoji || 'lucide:Bookmark'"
-        :size="14"
-        :color="dragState.item.color || '#5e6ad2'"
-      />
-
-      <!-- Name & Info -->
-      <span class="truncate max-w-[140px] text-xs font-semibold">
-        {{ dragState.item.name }}
-      </span>
-
-      <!-- Mode Badge (+ for copy) -->
-      <span
-        v-if="dragState.isCopyMode"
-        class="ml-1 text-[10px] font-mono font-bold bg-[#02b8cc] text-black px-1.5 py-0.2 rounded-full flex items-center justify-center shadow-xs"
+      <div
+        class="flex items-center space-x-2 px-3 py-1.5 rounded-[8px] bg-[#08090a]/90 border border-[#02b8cc] text-white shadow-2xl backdrop-blur-xs text-xs animate-in zoom-in-95 duration-100 font-sans"
       >
-        + Copiar
-      </span>
-      <span
-        v-else-if="dragState.item.type === 'event'"
-        class="ml-1 text-[9px] font-mono text-[#8a8f98] bg-[#23252a] px-1 rounded"
-      >
-        Mover
-      </span>
-      <span
-        v-else
-        class="ml-1 text-[9px] font-mono text-[#8a8f98] bg-[#23252a] px-1 rounded"
-      >
-        Novo
-      </span>
+        <div class="p-1 rounded bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
+          <IconRenderer :icon="state.item.emoji || 'lucide:Bookmark'" :size="14" :color="state.item.color || '#02b8cc'" />
+        </div>
+        <span class="font-medium truncate max-w-xs">{{ state.item.name }}</span>
+        
+        <span v-if="state.isCopyMode" class="text-[10px] font-mono font-bold bg-[#02b8cc] text-[#08090a] px-1.5 py-0.2 rounded">
+          + Copiar
+        </span>
+      </div>
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { DragService } from '@cansche/application';
+import { DragService } from '../services/DragService';
 import IconRenderer from './IconRenderer.vue';
 
-const dragState = computed(() => DragService.state);
+const state = computed(() => DragService.state);
 </script>

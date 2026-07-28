@@ -63,7 +63,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
 import { Calendar, Model, CalendarEvent as DomainEvent } from '@cansche/domain';
-import { InspectorService } from '@cansche/application';
+import { InspectorService } from '../services/InspectorService';
 import CalendarCell, { CalendarDayView } from './CalendarCell.vue';
 import { EventViewItem } from './CalendarEvent.vue';
 import EventHoverCard from './EventHoverCard.vue';
@@ -249,7 +249,7 @@ function cancelHoverCardHide() {
 function onSelectEvent(item: EventViewItem) {
   hoverCardState.value.isOpen = false;
   overflowState.value.isOpen = false;
-  InspectorService.close();
+  InspectorService.open(item);
 }
 
 function onEditEvent(item: EventViewItem) {

@@ -3,10 +3,6 @@ import { ImportExportService as EngineImportExport } from '@cansche/engine';
 import { PlatformAdapter } from '@cansche/platform';
 import { CalendarRepository } from '@cansche/repositories';
 
-export * from './InspectorService';
-export * from './DragService';
-export * from './CommandPaletteService';
-
 export class ApplicationImportExportService {
   constructor(
     private repository: CalendarRepository,

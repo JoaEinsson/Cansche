@@ -102,7 +102,10 @@ import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, Mov
 import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
 import { DesktopPlatformAdapter } from '@cansche/platform';
-import { ApplicationImportExportService, BackupService, NotificationService, InspectorService, DragService, CommandPaletteService } from '@cansche/application';
+import { ApplicationImportExportService, BackupService, NotificationService } from '@cansche/application';
+import { InspectorService } from './services/InspectorService';
+import { DragService } from './services/DragService';
+import { CommandPaletteService } from './services/CommandPaletteService';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';

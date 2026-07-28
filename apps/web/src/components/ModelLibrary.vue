@@ -155,14 +155,14 @@
             <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-opacity">
               <button
                 @click.stop="$emit('edit-model', model)"
-                class="p-1 text-[#8a8f98] hover:text-white rounded hover:bg-[#23252a] transition-colors"
+                class="p-1 text-[#8a8f98] hover:text-white rounded hover:bg-[#23252a] transition-colors cursor-pointer"
                 title="Editar Modelo"
               >
                 <IconRenderer icon="lucide:Edit2" :size="12" color="#8a8f98" />
               </button>
               <button
                 @click.stop="$emit('delete-model', model.id)"
-                class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors"
+                class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors cursor-pointer"
                 title="Excluir Modelo"
               >
                 <IconRenderer icon="lucide:Trash2" :size="12" color="#8a8f98" />
@@ -182,7 +182,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
-import { DragService } from '@cansche/application';
+import { DragService } from '../services/DragService';
 import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{

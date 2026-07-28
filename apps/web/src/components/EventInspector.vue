@@ -113,14 +113,14 @@
       <button
         v-if="item.model"
         @click="$emit('edit-model', item.model)"
-        class="w-full bg-[#161718] hover:bg-[#23252a] text-white border border-[#23252a] font-medium py-2 rounded-[6px] text-xs transition-colors flex items-center justify-center space-x-1.5"
+        class="w-full bg-[#161718] hover:bg-[#23252a] text-white border border-[#23252a] font-medium py-2 rounded-[6px] text-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
       >
         <span>Editar Modelo Base</span>
       </button>
 
       <button
         @click="$emit('delete-event', item.event)"
-        class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-medium py-2 rounded-[6px] text-xs transition-colors"
+        class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-medium py-2 rounded-[6px] text-xs transition-colors cursor-pointer"
       >
         Excluir este Evento
       </button>
@@ -130,13 +130,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { InspectorService } from '@cansche/application';
+import { InspectorService } from '../services/InspectorService';
 import IconRenderer from './IconRenderer.vue';
 
 const emit = defineEmits(['toggle-checklist', 'edit-model', 'delete-event']);
 
-const isOpen = computed(() => InspectorService.isOpen);
-const item = computed(() => InspectorService.activeItem);
+const isOpen = computed(() => InspectorService.isOpen.value);
+const item = computed(() => InspectorService.activeItem.value);
 
 const itemName = computed(() => item.value?.event?.overrides?.name || item.value?.model?.name || 'Evento');
 const itemIcon = computed(() => item.value?.event?.overrides?.emoji || item.value?.model?.emoji || 'lucide:Bookmark');

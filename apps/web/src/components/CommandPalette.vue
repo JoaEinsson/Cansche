@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-import { CommandPaletteService, UICommand } from '@cansche/application';
+import { CommandPaletteService, UICommand } from '../services/CommandPaletteService';
 import IconRenderer from './IconRenderer.vue';
 
 const searchInput = ref<HTMLInputElement | null>(null);

@@ -43,31 +43,31 @@
       <div class="flex items-center space-x-1.5">
         <button
           @click="$emit('copy')"
-          class="px-2.5 py-1 bg-[#0f1011] hover:bg-[#23252a] text-white rounded-[6px] flex items-center space-x-1 border border-[#23252a] text-[11px] transition-colors cursor-pointer"
+          class="px-2.5 py-1 bg-[#0f1011] hover:bg-[#23252a] text-white rounded-[6px] flex items-center space-x-1.5 border border-[#23252a] text-[11px] transition-colors cursor-pointer"
           title="Copiar células selecionadas (Ctrl+C)"
         >
           <span>Copiar</span>
-          <kbd class="text-[9px] font-mono text-[#62666d]">^C</kbd>
+          <kbd class="text-[9px] font-mono text-[#62666d] bg-[#08090a] px-1 py-0.2 rounded border border-[#23252a]">Ctrl+C</kbd>
         </button>
 
         <button
           @click="$emit('paste')"
           :disabled="!hasClipboard"
-          class="px-2.5 py-1 rounded-[6px] flex items-center space-x-1 border text-[11px] transition-colors"
+          class="px-2.5 py-1 rounded-[6px] flex items-center space-x-1.5 border text-[11px] transition-colors"
           :class="hasClipboard ? 'bg-[#0f1011] hover:bg-[#23252a] text-white border-[#23252a] cursor-pointer' : 'opacity-40 text-[#62666d] border-transparent cursor-not-allowed'"
           title="Colar células copiadas (Ctrl+V)"
         >
           <span>Colar</span>
-          <kbd class="text-[9px] font-mono text-[#62666d]">^V</kbd>
+          <kbd class="text-[9px] font-mono text-[#62666d] bg-[#08090a] px-1 py-0.2 rounded border border-[#23252a]">Ctrl+V</kbd>
         </button>
 
         <button
           @click="$emit('clear-cells')"
-          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1 text-[11px] transition-colors cursor-pointer"
+          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1.5 text-[11px] transition-colors cursor-pointer"
           title="Limpar células selecionadas (Del)"
         >
           <span>Limpar</span>
-          <kbd class="text-[9px] font-mono text-red-400/70">Del</kbd>
+          <kbd class="text-[9px] font-mono text-red-400/80 bg-red-950/40 px-1 py-0.2 rounded border border-red-500/30">Del</kbd>
         </button>
 
         <button

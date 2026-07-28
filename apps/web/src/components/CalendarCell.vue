@@ -1,87 +1,65 @@
 <template>
   <div
-    @mousedown="onMouseDown"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
-    class="group/cell relative rounded-[8px] border flex flex-col justify-between p-1.5 transition-all duration-150 cursor-pointer overflow-hidden select-none hover:scale-[1.01]"
+    @pointerdown="onPointerDownCell"
+    @mouseenter="onMouseEnterCell"
+    class="relative flex flex-col h-full bg-[#0f1011] border rounded-[8px] p-1.5 transition-all select-none overflow-hidden group min-h-0"
     :class="[
-      isHoverTarget
-        ? '!border-[#02b8cc] !bg-[#02b8cc]/10 ring-2 ring-[#02b8cc]/40 z-20'
-        : day.isSelected
-        ? '!bg-[#161718] !border-white ring-1 ring-white/40 shadow-md z-10'
-        : day.isCurrentMonth
-        ? 'bg-[#0f1011] border-[#23252a] hover:border-[#383b3f]'
-        : 'bg-[#08090a]/50 border-[#161718] text-[#62666d] opacity-40',
-      day.isToday && !day.isSelected && !isHoverTarget ? 'border-[#02b8cc]/80' : ''
+      day.isCurrentMonth ? 'text-white border-[#23252a]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/50',
+      day.isToday ? 'border-[#02b8cc]/60 shadow-xs shadow-[#02b8cc]/20' : '',
+      day.isSelected ? 'ring-2 ring-white border-transparent bg-[#161718]' : 'hover:border-[#383b3f]',
+      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/10 border-[#02b8cc]' : ''
     ]"
   >
-    <!-- Top accent bar for selected cells -->
-    <div
-      v-if="day.isSelected && !isHoverTarget"
-      class="absolute top-0 left-0 right-0 h-0.5 bg-white shadow-xs"
-    ></div>
-
-    <!-- Cell Top Bar: Date Number + Today Indicator -->
-    <div class="flex items-center justify-between leading-none mb-1">
+    <!-- Top Row: Day Number & Badge Indicators -->
+    <div class="flex items-center justify-between mb-1 shrink-0">
       <span
-        class="text-[11px] font-mono px-1.5 py-0.5 rounded transition-colors"
-        :class="[
-          day.isSelected
-            ? 'bg-white text-[#08090a] font-bold shadow-xs'
-            : day.isToday
-            ? 'bg-[#02b8cc] text-black font-bold'
-            : 'text-[#8a8f98] group-hover/cell:text-white'
-        ]"
+        class="text-xs font-mono font-medium px-1 py-0.2 rounded transition-colors"
+        :class="day.isToday ? 'bg-[#02b8cc] text-[#08090a] font-bold' : 'text-[#8a8f98] group-hover:text-white'"
       >
         {{ day.dayNumber }}
       </span>
 
-      <span v-if="day.isToday" class="w-1.5 h-1.5 rounded-full bg-[#02b8cc]" title="Hoje"></span>
+      <div class="flex items-center space-x-1">
+        <!-- Overflow Badge if more than 3 events -->
+        <button
+          v-if="overflowCount > 0"
+          @click.stop="$emit('open-overflow', { day, anchorEl: $el })"
+          class="text-[9px] font-mono px-1 rounded bg-[#161718] hover:bg-[#23252a] text-[#02b8cc] border border-[#23252a] transition-colors"
+        >
+          +{{ overflowCount }}
+        </button>
+      </div>
     </div>
 
-    <!-- Events List (Delegated to CalendarEvent.vue) -->
-    <div class="flex-1 flex flex-col gap-1 overflow-hidden justify-start">
+    <!-- Events Container -->
+    <div class="flex-1 flex flex-col space-y-1 overflow-hidden min-h-0">
+      <!-- Drag Ghost Placeholder Preview -->
+      <div
+        v-if="isDropTarget && dragGhostItem"
+        class="px-1.5 py-0.5 rounded-[4px] border border-dashed border-[#02b8cc] bg-[#02b8cc]/20 text-[#02b8cc] text-[11px] font-mono flex items-center space-x-1 animate-pulse"
+      >
+        <span>+ {{ dragGhostItem.name }}</span>
+      </div>
+
+      <!-- Rendered Events (Max 3 visible before overflow) -->
       <CalendarEvent
         v-for="item in visibleEvents"
         :key="item.event.id"
         :item="item"
+        @select-event="$emit('select-event', $event)"
         @hover-event="$emit('hover-event', $event)"
         @unhover-event="$emit('unhover-event')"
-        @select-event="$emit('select-event', $event)"
         @edit-event="$emit('edit-event', $event)"
-        @toggle-checklist="$emit('toggle-checklist', $event)"
       />
-
-      <!-- Ghost Preview Placeholder for Drag & Drop Target -->
-      <div
-        v-if="draggedItem"
-        class="h-[24px] px-2 py-0.5 rounded-[6px] text-[11px] font-medium flex items-center justify-between border border-dashed border-[#02b8cc] bg-[#02b8cc]/20 text-white animate-pulse"
-      >
-        <div class="flex items-center gap-1.5 truncate">
-          <IconRenderer :icon="draggedItem.emoji || 'lucide:Bookmark'" :size="12" :color="draggedItem.color || '#02b8cc'" />
-          <span class="truncate font-sans text-[11px] font-medium">{{ draggedItem.name }}</span>
-        </div>
-        <span v-if="DragService.state.isCopyMode" class="text-[9px] font-mono font-bold bg-[#02b8cc] text-black px-1 rounded">+</span>
-      </div>
     </div>
-
-    <!-- Overflow Counter Button (+N mais) -->
-    <button
-      v-if="overflowCount > 0"
-      @click.stop="$emit('open-overflow', { day, anchorEl: $event.currentTarget })"
-      class="text-[9px] font-mono text-[#8a8f98] hover:text-white hover:bg-[#23252a] px-1.5 py-0.5 rounded text-right leading-none transition-colors self-end mt-0.5 cursor-pointer"
-    >
-      +{{ overflowCount }} mais
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ISODate } from '@cansche/shared';
-import { DragService } from '@cansche/application';
+import { DragService } from '../services/DragService';
 import CalendarEvent, { EventViewItem } from './CalendarEvent.vue';
-import IconRenderer from './IconRenderer.vue';
 
 export interface CalendarDayView {
   date: ISODate;
@@ -94,7 +72,6 @@ export interface CalendarDayView {
 
 const props = defineProps<{
   day: CalendarDayView;
-  maxVisibleEvents?: number;
 }>();
 
 const emit = defineEmits([
@@ -107,28 +84,30 @@ const emit = defineEmits([
   'open-overflow',
 ]);
 
-const maxEvents = computed(() => props.maxVisibleEvents || 3);
+const MAX_VISIBLE_EVENTS = 3;
 
 const visibleEvents = computed(() => {
-  return props.day.events.slice(0, maxEvents.value);
+  return (props.day.events || []).slice(0, MAX_VISIBLE_EVENTS);
 });
 
 const overflowCount = computed(() => {
-  return Math.max(0, props.day.events.length - maxEvents.value);
+  const total = props.day.events?.length || 0;
+  return total > MAX_VISIBLE_EVENTS ? total - MAX_VISIBLE_EVENTS : 0;
 });
 
-const isHoverTarget = computed(() => {
+const isDropTarget = computed(() => {
   const st = DragService.state;
   return st.isDragging && st.hoverDate === props.day.date;
 });
 
-const draggedItem = computed(() => {
-  const st = DragService.state;
-  return st.isDragging && st.hoverDate === props.day.date ? st.item : null;
+const dragGhostItem = computed(() => {
+  return DragService.state.item;
 });
 
-function onMouseDown(event: MouseEvent) {
-  if (DragService.state.isDragging) return;
+function onPointerDownCell(event: PointerEvent) {
+  const target = event.target as HTMLElement;
+  if (target.closest('button')) return;
+
   emit('select-date', {
     date: props.day.date,
     ctrlKey: event.ctrlKey || event.metaKey,
@@ -137,22 +116,7 @@ function onMouseDown(event: MouseEvent) {
   });
 }
 
-function onMouseEnter() {
-  if (DragService.state.isDragging) {
-    DragService.setHoverDate(props.day.date);
-    return;
-  }
-  emit('select-date', {
-    date: props.day.date,
-    ctrlKey: true,
-    shiftKey: false,
-    isDrag: true,
-  });
-}
-
-function onMouseLeave() {
-  if (DragService.state.isDragging && DragService.state.hoverDate === props.day.date) {
-    DragService.setHoverDate(null);
-  }
+function onMouseEnterCell() {
+  DragService.setHoverDate(props.day.date);
 }
 </script>

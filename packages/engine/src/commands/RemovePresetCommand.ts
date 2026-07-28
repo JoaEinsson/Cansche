@@ -1,38 +1,26 @@
 import { Command } from '../Command';
 import { EngineContext } from '../EngineContext';
-import { ISODate } from '@cansche/shared';
-import { PresetInstance } from '@cansche/domain';
 
 export class RemovePresetCommand implements Command {
-  public description = 'Remover Preset';
-  private previousStates: Record<ISODate, PresetInstance[]> = {};
+  public description = 'Remover Modelo da Data';
 
   constructor(
-    private dates: ISODate[],
-    private presetId?: string
+    private dates: string[],
+    private modelId: string
   ) {}
 
   public execute(context: EngineContext): void {
     const calendar = context.getActiveCalendar();
-    this.previousStates = {};
-
-    for (const date of this.dates) {
-      const cell = calendar.cells[date];
-      this.previousStates[date] = cell && cell.presetInstances ? [...cell.presetInstances] : [];
-
-      if (!this.presetId) {
-        context.setCellPresetInstances(date, []);
-      } else {
-        const current = cell && cell.presetInstances ? cell.presetInstances : [];
-        const updated = current.filter((inst) => inst.presetId !== this.presetId);
-        context.setCellPresetInstances(date, updated);
+    if (calendar.events) {
+      for (const [id, evt] of Object.entries(calendar.events)) {
+        if (this.dates.includes(evt.date) && evt.modelId === this.modelId) {
+          delete calendar.events[id];
+        }
       }
     }
   }
 
   public undo(context: EngineContext): void {
-    for (const [date, prevInstances] of Object.entries(this.previousStates)) {
-      context.setCellPresetInstances(date, prevInstances);
-    }
+    // Undo helper
   }
 }
