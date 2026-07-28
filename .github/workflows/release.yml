@@ -44,6 +44,9 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install
 
+      - name: Generate Icons
+        run: node apps/desktop/scripts/generate-icons.mjs
+
       - name: Build Web Application
         run: pnpm build
 
