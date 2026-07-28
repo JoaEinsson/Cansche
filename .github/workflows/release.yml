@@ -1,0 +1,68 @@
+name: Desktop Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'windows-latest'
+            args: ''
+          - platform: 'ubuntu-22.04'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev file
+
+      - name: Install Node dependencies
+        run: pnpm install
+
+      - name: Build Web Application
+        run: pnpm build
+
+      - name: Build Tauri Desktop App & Create Release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Cansche v__VERSION__ — Desktop Release'
+          releaseBody: |
+            Cansche v__VERSION__ — Desktop Release
+
+            Initial stable desktop release.
+
+            Available installers:
+            - Cansche Setup .exe (Windows)
+            - Cansche .msi (Windows)
+            - Cansche .AppImage (Linux)
+            - Cansche .deb (Linux)
+          releaseDraft: false
+          prerelease: false
