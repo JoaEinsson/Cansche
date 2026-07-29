@@ -1,4 +1,4 @@
-name: CI & Release Pipeline
+name: Continuous Integration (CI)
 
 on:
   push:
@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [ main, master ]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
+    name: Build & Test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +30,8 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Run Build
+      - name: Run Workspace Build
         run: pnpm build
 
-      - name: Run Tests
+      - name: Run Test Suite
         run: pnpm test
