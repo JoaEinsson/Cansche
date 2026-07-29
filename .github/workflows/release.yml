@@ -49,20 +49,17 @@ jobs:
       - name: Generate Valid PNG Icons
         run: node apps/desktop/scripts/generate-valid-pngs.mjs
 
-      - name: Build Web Application
-        run: pnpm build
-
       - name: Build Tauri Desktop App & Create Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'Cansche v__VERSION__ — Desktop Release'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Cansche ${{ github.ref_name }} — Desktop Release'
           releaseBody: |
-            Cansche v__VERSION__ — Desktop Release
+            Cansche ${{ github.ref_name }} — Desktop Release
 
-            Initial stable desktop release.
+            Stable desktop release.
 
             Available installers:
             - Cansche Setup .exe (Windows)
