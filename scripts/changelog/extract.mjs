@@ -47,11 +47,11 @@ try {
   const textOutput = toText(release);
   const jsonOutput = toJSON(release);
 
-  console.log(`\n========================================`);
-  console.log(`✨ RELEASE NOTES EXTRADAS — CANCHE v${release.version}`);
-  console.log(`========================================\n`);
+  console.log(`\n==============================`);
+  console.log(`RELEASE NOTES — CANSCHE v${release.version}`);
+  console.log(`==============================\n`);
   console.log(textOutput);
-  console.log(`\n========================================\n`);
+  console.log(`\n==============================\n`);
 
   // Write outputs to GitHub Actions environment if running in CI
   if (process.env.GITHUB_OUTPUT) {

@@ -1,17 +1,15 @@
-import { ChangelogRelease } from './parser.mjs';
-
-const SECTION_EMOJIS: Record<string, string> = {
-  Added: '✨ Novos Recursos',
-  Changed: '🛠️ Alterações e Melhorias',
-  Fixed: '🐛 Correções de Bugs',
-  Removed: '🗑️ Remoções',
-  Deprecated: '⚠️ Descontinuado',
-  Security: '🔒 Segurança',
-  Performance: '⚡ Desempenho',
+const SECTION_EMOJIS = {
+  Added: '[Novos Recursos]',
+  Changed: '[Alterações e Melhorias]',
+  Fixed: '[Correções de Bugs]',
+  Removed: '[Remoções]',
+  Deprecated: '[Descontinuado]',
+  Security: '[Segurança]',
+  Performance: '[Desempenho]',
 };
 
-export function toMarkdown(release: ChangelogRelease): string {
-  const lines: string[] = [];
+export function toMarkdown(release) {
+  const lines = [];
 
   for (const sec of release.sections) {
     if (sec.items.length === 0) continue;
@@ -25,8 +23,8 @@ export function toMarkdown(release: ChangelogRelease): string {
   return lines.join('\n').trim();
 }
 
-export function toText(release: ChangelogRelease): string {
-  const lines: string[] = [];
+export function toText(release) {
+  const lines = [];
 
   for (const sec of release.sections) {
     if (sec.items.length === 0) continue;
@@ -41,6 +39,6 @@ export function toText(release: ChangelogRelease): string {
   return lines.join('\n').trim();
 }
 
-export function toJSON(release: ChangelogRelease): string {
+export function toJSON(release) {
   return JSON.stringify(release, null, 2);
 }

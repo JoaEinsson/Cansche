@@ -1,28 +1,29 @@
 import fs from 'fs';
-import path from 'path';
 
-export interface ChangelogSection {
-  title: string;
-  items: string[];
-}
+/**
+ * @typedef {Object} ChangelogSection
+ * @property {string} title
+ * @property {string[]} items
+ */
 
-export interface ChangelogRelease {
-  version: string;
-  date?: string;
-  sections: ChangelogSection[];
-}
+/**
+ * @typedef {Object} ChangelogRelease
+ * @property {string} version
+ * @property {string} [date]
+ * @property {ChangelogSection[]} sections
+ */
 
-export function parseChangelog(filePathOrContent: string): ChangelogRelease[] {
+export function parseChangelog(filePathOrContent) {
   let content = filePathOrContent;
   if (fs.existsSync(filePathOrContent)) {
     content = fs.readFileSync(filePathOrContent, 'utf-8');
   }
 
-  const releases: ChangelogRelease[] = [];
+  const releases = [];
   const lines = content.split(/\r?\n/);
 
-  let currentRelease: ChangelogRelease | null = null;
-  let currentSection: ChangelogSection | null = null;
+  let currentRelease = null;
+  let currentSection = null;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
@@ -79,7 +80,7 @@ export function parseChangelog(filePathOrContent: string): ChangelogRelease[] {
   }
 
   // Validate duplicate versions
-  const versionSet = new Set<string>();
+  const versionSet = new Set();
   for (const rel of releases) {
     if (versionSet.has(rel.version)) {
       throw new Error(`Duplicate version detected in CHANGELOG.md: [${rel.version}]`);
@@ -90,7 +91,7 @@ export function parseChangelog(filePathOrContent: string): ChangelogRelease[] {
   return releases;
 }
 
-export function findRelease(releases: ChangelogRelease[], targetVersion: string): ChangelogRelease | null {
+export function findRelease(releases, targetVersion) {
   const cleanTarget = targetVersion.replace(/^v/, '').trim();
   return releases.find((r) => r.version === cleanTarget) || null;
 }
