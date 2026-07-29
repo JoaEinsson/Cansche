@@ -57,3 +57,5 @@ export class NotificationService {
     await this.notify(`Compromisso: ${presetName}`, bodyParts.join(' • ') || 'Lembrete do Cansche Desktop');
   }
 }
+
+export * from './UpdateService';

@@ -41,3 +41,5 @@ export class WebPlatformAdapter {
     }
 }
 export { WebPlatformAdapter as DesktopPlatformAdapter };
+export * from './update/UpdaterAdapter';
+export * from './update/WebNoopUpdaterAdapter';

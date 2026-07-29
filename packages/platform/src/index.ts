@@ -54,3 +54,6 @@ export class WebPlatformAdapter implements PlatformAdapter {
 }
 
 export { WebPlatformAdapter as DesktopPlatformAdapter };
+
+export * from './update/UpdaterAdapter';
+export * from './update/WebNoopUpdaterAdapter';

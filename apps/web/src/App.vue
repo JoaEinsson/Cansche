@@ -91,6 +91,15 @@
       @duplicate="handleDuplicateCalendar"
       @delete="handleDeleteCalendar"
     />
+
+    <!-- Auto-Update Notification Modal -->
+    <UpdateModal
+      :is-open="isUpdateModalOpen"
+      :update-info="updateInfo"
+      @close="isUpdateModalOpen = false"
+      @dismiss="handleDismissUpdate"
+      @start-download="handleStartDownloadUpdate"
+    />
   </div>
 </template>
 
@@ -101,12 +110,13 @@ import { Calendar, Workspace, Model, CalendarEvent, ClipboardData } from '@cansc
 import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator, ImportExportService } from '@cansche/engine';
 import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
-import { DesktopPlatformAdapter } from '@cansche/platform';
-import { ApplicationImportExportService, BackupService, NotificationService } from '@cansche/application';
+import { DesktopPlatformAdapter, UpdateInfo, WebNoopUpdaterAdapter } from '@cansche/platform';
+import { ApplicationImportExportService, BackupService, NotificationService, UpdateService } from '@cansche/application';
 import { InspectorService } from './services/InspectorService';
 import { DragService } from './services/DragService';
 import { CommandPaletteService } from './services/CommandPaletteService';
 import { ModelCategoryService } from './services/ModelCategoryService';
+import { TauriUpdaterAdapter } from './services/TauriUpdaterAdapter';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';
@@ -115,6 +125,7 @@ import EventInspector from './components/EventInspector.vue';
 import SmartSelectionToolbar from './components/SmartSelectionToolbar.vue';
 import ModelEditorModal from './components/ModelEditorModal.vue';
 import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
+import UpdateModal from './components/UpdateModal.vue';
 import DragOverlay from './components/DragOverlay.vue';
 import CommandPalette from './components/CommandPalette.vue';
 
@@ -123,6 +134,10 @@ const repository = new LocalStorageRepository();
 const platform = new DesktopPlatformAdapter();
 const engine = new CalendarEngine();
 const selectionService = new SelectionService();
+
+const tauriAdapter = new TauriUpdaterAdapter();
+const updaterAdapter = tauriAdapter.isSupported() ? tauriAdapter : new WebNoopUpdaterAdapter();
+const updateService = new UpdateService(updaterAdapter);
 
 const importExportService = new ApplicationImportExportService(repository, platform);
 const backupService = new BackupService(repository, platform);
@@ -138,6 +153,9 @@ const clipboardData = ref<ClipboardData | null>(engine.getClipboard());
 const isModalOpen = ref(false);
 const editingModel = ref<Model | null>(null);
 const isWorkspaceManagerOpen = ref(false);
+
+const isUpdateModalOpen = ref(false);
+const updateInfo = ref<UpdateInfo | null>(null);
 
 const monthNames = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -368,8 +386,43 @@ function openCommandPalette() {
   CommandPaletteService.open();
 }
 
+async function checkForUpdates(isManual = false) {
+  const res = await updateService.checkForUpdates(isManual);
+  if (res.hasUpdate) {
+    updateInfo.value = res;
+    isUpdateModalOpen.value = true;
+  } else if (isManual) {
+    notificationService.notify('Cansche Atualizado', 'Sua aplicação já está na versão mais recente!');
+  }
+}
+
+function handleDismissUpdate() {
+  if (updateInfo.value?.latestVersion) {
+    updateService.dismissVersion(updateInfo.value.latestVersion);
+  }
+  isUpdateModalOpen.value = false;
+}
+
+async function handleStartDownloadUpdate(onProgress: (downloaded: number, total: number) => void) {
+  try {
+    await updateService.downloadAndInstall(onProgress);
+  } catch (err) {
+    console.error('Failed to download update:', err);
+    notificationService.notify('Erro ao Atualizar', 'Falha ao baixar atualização. Tente novamente mais tarde.');
+  }
+}
+
 function registerSystemCommands() {
   CommandPaletteService.setCommands([
+    {
+      id: 'check-updates',
+      title: 'Verificar Atualizações',
+      subtitle: 'Procurar por novas versões do Cansche Desktop',
+      keywords: ['atualizacao', 'update', 'versao', 'novo'],
+      icon: 'lucide:RefreshCw',
+      category: 'Sistema',
+      execute: () => checkForUpdates(true),
+    },
     {
       id: 'go-today',
       title: 'Ir para Hoje',
@@ -680,6 +733,9 @@ onMounted(async () => {
   }
 
   syncState();
+
+  // Check for updates silently on startup
+  checkForUpdates(false);
 });
 
 onUnmounted(() => {

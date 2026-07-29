@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "pnpm --filter @cansche/web dev",
     "build": "pnpm -r build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "changelog:extract": "node scripts/changelog/extract.mjs"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

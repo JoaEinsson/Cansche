@@ -6,7 +6,7 @@ export interface UICommand {
   subtitle?: string;
   keywords: string[];
   icon?: string;
-  category: 'Navegação' | 'Ações' | 'Filtros' | 'Workspace';
+  category: 'Navegação' | 'Ações' | 'Filtros' | 'Workspace' | 'Sistema';
   execute: () => void;
 }
 
