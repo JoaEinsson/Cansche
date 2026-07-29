@@ -106,6 +106,7 @@ import { ApplicationImportExportService, BackupService, NotificationService } fr
 import { InspectorService } from './services/InspectorService';
 import { DragService } from './services/DragService';
 import { CommandPaletteService } from './services/CommandPaletteService';
+import { ModelCategoryService } from './services/ModelCategoryService';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';
@@ -254,6 +255,9 @@ function handleEditModel(model: Model) {
 }
 
 function handleSaveModel(modelData: Model) {
+  const categoryName = modelData.metadata?.category || (modelData as any).category || 'Geral';
+  ModelCategoryService.expandCategory(categoryName);
+
   if (modelData.id) {
     engine.updateModel(modelData);
   } else {

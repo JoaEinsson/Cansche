@@ -5,12 +5,12 @@
     class="relative flex flex-col h-full border rounded-[8px] p-1.5 transition-all select-none overflow-hidden group min-h-0"
     :class="[
       day.isCurrentMonth ? 'text-white border-[#23252a] bg-[#0f1011]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/60 opacity-40',
-      day.isToday ? 'border-[#02b8cc]/60 shadow-xs shadow-[#02b8cc]/20' : '',
-      day.isSelected ? 'ring-2 ring-white border-transparent bg-[#161718] opacity-100' : 'hover:border-[#383b3f]',
-      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/10 border-[#02b8cc] opacity-100' : ''
+      day.isToday ? 'border-[#02b8cc]/80 shadow-xs shadow-[#02b8cc]/20' : '',
+      day.isSelected ? 'ring-1 ring-[#02b8cc] border-[#02b8cc] bg-[#02b8cc]/10 opacity-100' : 'hover:border-[#383b3f]',
+      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/20 border-[#02b8cc] opacity-100' : ''
     ]"
   >
-    <!-- Top Row: Day Number & Badge Indicators -->
+    <!-- Top Row: Day Number & Indicators (Today Dot & Overflow Badge) -->
     <div class="flex items-center justify-between mb-1 shrink-0">
       <span
         class="text-xs font-mono font-medium px-1 py-0.2 rounded transition-colors"
@@ -19,7 +19,14 @@
         {{ day.dayNumber }}
       </span>
 
-      <div class="flex items-center space-x-1">
+      <div class="flex items-center space-x-1.5">
+        <!-- Today Cyan Dot Indicator -->
+        <span
+          v-if="day.isToday"
+          class="w-2 h-2 rounded-full bg-[#02b8cc] shadow-xs shadow-[#02b8cc]/80 shrink-0"
+          title="Hoje"
+        ></span>
+
         <!-- Overflow Badge if more than 3 events -->
         <button
           v-if="overflowCount > 0"
@@ -116,7 +123,17 @@ function onPointerDownCell(event: PointerEvent) {
   });
 }
 
-function onMouseEnterCell() {
+function onMouseEnterCell(event: MouseEvent) {
   DragService.setHoverDate(props.day.date);
+
+  // If mouse button is down and not dragging a model/event, paint-select cell
+  if (event.buttons === 1 && !DragService.state.isDragging) {
+    emit('select-date', {
+      date: props.day.date,
+      ctrlKey: false,
+      shiftKey: false,
+      isDrag: true,
+    });
+  }
 }
 </script>

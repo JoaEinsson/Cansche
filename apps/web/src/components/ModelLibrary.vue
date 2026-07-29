@@ -75,98 +75,117 @@
         </button>
       </div>
 
-      <!-- Models List Cards -->
-      <div class="flex-1 overflow-y-auto space-y-2 pr-1">
-        <div
-          v-for="model in sortedModels"
-          :key="model.id"
-          @pointerdown="onPointerDownModel($event, model)"
-          @click="$emit('apply-model', model.id)"
-          class="p-2.5 rounded-[8px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs hover:shadow-md"
-          :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
-        >
-          <!-- Top Row: Icon, Name, Star & Category Tag -->
-          <div class="flex items-center justify-between mb-1.5">
-            <div class="flex items-center space-x-2 min-w-0">
-              <!-- Favorite Star Button -->
-              <button
-                @click.stop="$emit('toggle-favorite', model.id)"
-                class="p-0.5 text-[#8a8f98] hover:text-amber-400 transition-colors cursor-pointer"
-                :title="model.favorite ? 'Remover dos favoritos' : 'Favoritar modelo'"
-              >
-                <IconRenderer
-                  icon="lucide:Star"
-                  :size="13"
-                  :color="model.favorite ? '#f59e0b' : '#62666d'"
-                />
-              </button>
-
-              <div class="p-1 rounded bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
-                <IconRenderer :icon="model.emoji || 'lucide:Bookmark'" :size="14" :color="model.color" />
-              </div>
-              <span class="text-xs font-medium text-white truncate group-hover:text-white transition-colors">
-                {{ model.name }}
-              </span>
-            </div>
-
-            <div class="flex items-center space-x-1.5 shrink-0">
-              <span
-                v-if="model.metadata?.category || (model as any).category"
-                class="text-[9px] px-1.5 py-0.2 rounded bg-[#161718] text-[#8a8f98] font-mono border border-[#23252a]"
-              >
-                {{ model.metadata?.category || (model as any).category }}
-              </span>
-              <span
-                class="w-2.5 h-2.5 rounded-full border border-black/40"
-                :style="{ backgroundColor: model.color }"
-              ></span>
-            </div>
-          </div>
-
-          <!-- Middle Row: Time range & Location -->
+      <!-- Models List Cards grouped by Category Accordion -->
+      <div class="flex-1 overflow-y-auto space-y-3 pr-1">
+        <div v-for="cat in groupedCategories" :key="cat.name" class="space-y-1.5">
+          <!-- Accordion Category Header -->
           <div
-            v-if="getModelStartTime(model) || getModelLocation(model)"
-            class="flex items-center space-x-2 text-[10px] text-[#8a8f98] font-mono mb-1"
+            @click="toggleCategory(cat.name)"
+            class="flex items-center justify-between py-1 px-1.5 rounded-[6px] hover:bg-[#161718] cursor-pointer transition-colors text-[11px] font-medium text-[#8a8f98] group"
           >
-            <span v-if="getModelStartTime(model)" class="flex items-center gap-1">
-              <IconRenderer icon="lucide:Clock" :size="11" color="#62666d" />
-              {{ getModelStartTime(model) }} - {{ getModelEndTime(model) }}
-            </span>
-
-            <span v-if="getModelLocation(model)" class="flex items-center gap-1 truncate text-[#8a8f98]">
-              <IconRenderer icon="lucide:MapPin" :size="11" color="#8a8f98" />
-              <span class="truncate">{{ getModelLocation(model) }}</span>
+            <div class="flex items-center space-x-1.5 truncate">
+              <IconRenderer
+                :icon="cat.collapsed ? 'lucide:ChevronRight' : 'lucide:ChevronDown'"
+                :size="13"
+                color="#62666d"
+              />
+              <span class="truncate uppercase tracking-wider group-hover:text-white transition-colors font-mono">
+                {{ cat.name }}
+              </span>
+            </div>
+            <span class="text-[10px] font-mono text-[#62666d] px-1.5 py-0.2 rounded bg-[#08090a] border border-[#23252a]">
+              {{ cat.count }}
             </span>
           </div>
 
-          <!-- Bottom Row: Checklist count & Quick Actions -->
-          <div class="flex items-center justify-between text-[10px] text-[#62666d] pt-1 border-t border-[#161718]">
-            <span v-if="getChecklistCount(model) > 0" class="flex items-center gap-1">
-              <IconRenderer icon="lucide:CheckSquare" :size="10" color="#62666d" />
-              <span>{{ getChecklistCount(model) }} tarefas</span>
-            </span>
-            <span v-else-if="getModelDescription(model)" class="truncate max-w-[120px]">
-              {{ getModelDescription(model) }}
-            </span>
-            <span v-else class="italic text-[9px] text-[#62666d]">
-              Arraste p/ o dia
-            </span>
+          <!-- Models List within Category -->
+          <div v-show="!cat.collapsed" class="space-y-2 pl-1">
+            <div
+              v-for="model in cat.models"
+              :key="model.id"
+              @pointerdown="onPointerDownModel($event, model)"
+              @click="$emit('apply-model', model.id)"
+              class="p-2.5 rounded-[8px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs hover:shadow-md"
+              :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
+            >
+              <!-- Top Row: Icon, Name, Star & Category Tag -->
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-2 min-w-0">
+                  <!-- Favorite Star Button -->
+                  <button
+                    @click.stop="$emit('toggle-favorite', model.id)"
+                    class="p-0.5 text-[#8a8f98] hover:text-amber-400 transition-colors cursor-pointer"
+                    :title="model.favorite ? 'Remover dos favoritos' : 'Favoritar modelo'"
+                  >
+                    <IconRenderer
+                      icon="lucide:Star"
+                      :size="13"
+                      :color="model.favorite ? '#f59e0b' : '#62666d'"
+                    />
+                  </button>
 
-            <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-opacity">
-              <button
-                @click.stop="$emit('edit-model', model)"
-                class="p-1 text-[#8a8f98] hover:text-white rounded hover:bg-[#23252a] transition-colors cursor-pointer"
-                title="Editar Modelo"
+                  <div class="p-1 rounded bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
+                    <IconRenderer :icon="model.emoji || 'lucide:Bookmark'" :size="14" :color="model.color" />
+                  </div>
+                  <span class="text-xs font-medium text-white truncate group-hover:text-white transition-colors">
+                    {{ model.name }}
+                  </span>
+                </div>
+
+                <div class="flex items-center space-x-1.5 shrink-0">
+                  <span
+                    class="w-2.5 h-2.5 rounded-full border border-black/40"
+                    :style="{ backgroundColor: model.color }"
+                  ></span>
+                </div>
+              </div>
+
+              <!-- Middle Row: Time range & Location -->
+              <div
+                v-if="getModelStartTime(model) || getModelLocation(model)"
+                class="flex items-center space-x-2 text-[10px] text-[#8a8f98] font-mono mb-1"
               >
-                <IconRenderer icon="lucide:Edit2" :size="12" color="#8a8f98" />
-              </button>
-              <button
-                @click.stop="$emit('delete-model', model.id)"
-                class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors cursor-pointer"
-                title="Excluir Modelo"
-              >
-                <IconRenderer icon="lucide:Trash2" :size="12" color="#8a8f98" />
-              </button>
+                <span v-if="getModelStartTime(model)" class="flex items-center gap-1">
+                  <IconRenderer icon="lucide:Clock" :size="11" color="#62666d" />
+                  {{ getModelStartTime(model) }} - {{ getModelEndTime(model) }}
+                </span>
+
+                <span v-if="getModelLocation(model)" class="flex items-center gap-1 truncate text-[#8a8f98]">
+                  <IconRenderer icon="lucide:MapPin" :size="11" color="#8a8f98" />
+                  <span class="truncate">{{ getModelLocation(model) }}</span>
+                </span>
+              </div>
+
+              <!-- Bottom Row: Checklist count & Quick Actions -->
+              <div class="flex items-center justify-between text-[10px] text-[#62666d] pt-1 border-t border-[#161718]">
+                <span v-if="getChecklistCount(model) > 0" class="flex items-center gap-1">
+                  <IconRenderer icon="lucide:CheckSquare" :size="10" color="#62666d" />
+                  <span>{{ getChecklistCount(model) }} tarefas</span>
+                </span>
+                <span v-else-if="getModelDescription(model)" class="truncate max-w-[120px]">
+                  {{ getModelDescription(model) }}
+                </span>
+                <span v-else class="italic text-[9px] text-[#62666d]">
+                  Arraste p/ o dia
+                </span>
+
+                <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-opacity">
+                  <button
+                    @click.stop="$emit('edit-model', model)"
+                    class="p-1 text-[#8a8f98] hover:text-white rounded hover:bg-[#23252a] transition-colors cursor-pointer"
+                    title="Editar Modelo"
+                  >
+                    <IconRenderer icon="lucide:Edit2" :size="12" color="#8a8f98" />
+                  </button>
+                  <button
+                    @click.stop="$emit('delete-model', model.id)"
+                    class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors cursor-pointer"
+                    title="Excluir Modelo"
+                  >
+                    <IconRenderer icon="lucide:Trash2" :size="12" color="#8a8f98" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -183,6 +202,7 @@
 import { computed } from 'vue';
 import { Calendar, Model } from '@cansche/domain';
 import { DragService } from '../services/DragService';
+import { ModelCategoryService } from '../services/ModelCategoryService';
 import IconRenderer from './IconRenderer.vue';
 
 const props = defineProps<{
@@ -192,7 +212,7 @@ const props = defineProps<{
   models: Model[];
 }>();
 
-const emit = defineEmits([
+defineEmits([
   'select-editing-calendar',
   'toggle-layer-visibility',
   'open-workspace-manager',
@@ -203,16 +223,13 @@ const emit = defineEmits([
   'toggle-favorite',
 ]);
 
-const sortedModels = computed(() => {
-  return [...props.models].sort((a, b) => {
-    if (a.favorite && !b.favorite) return -1;
-    if (!a.favorite && b.favorite) return 1;
-    const usageA = a.usageCount || 0;
-    const usageB = b.usageCount || 0;
-    if (usageA !== usageB) return usageB - usageA;
-    return a.name.localeCompare(b.name);
-  });
+const groupedCategories = computed(() => {
+  return ModelCategoryService.getGroupedCategories(props.models);
 });
+
+function toggleCategory(catName: string) {
+  ModelCategoryService.toggleCategory(catName);
+}
 
 function onPointerDownModel(event: PointerEvent, model: Model) {
   if (event.button !== 0) return;

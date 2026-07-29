@@ -144,6 +144,20 @@ export class CalendarEngine {
     exportWorkspace() {
         return ImportExportService.exportWorkspace(this.workspace);
     }
+    importFile(jsonString) {
+        const imported = ImportExportService.importFile(jsonString);
+        if (imported.type === 'workspace') {
+            this.setWorkspace(imported.data);
+        }
+        else if (imported.type === 'calendar') {
+            const cal = imported.data;
+            this.workspace.calendars[cal.id] = cal;
+            this.workspace.editingCalendarId = cal.id;
+            this.ensureEditingCalendar();
+            this.onStateChanged.notify(this.workspace);
+        }
+        return imported;
+    }
     // EngineContext Implementation
     setEventsForDate(date, events) {
         const calendar = this.getActiveCalendar();
