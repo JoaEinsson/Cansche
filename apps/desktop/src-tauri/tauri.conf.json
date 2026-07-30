@@ -38,7 +38,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2NzRDQzMwODU0RDUzRTkKUldTOEJ0OGtWV0NnTHBvWjlsQ2tzQkJxcWwva0JCRERkWXJvQUlDTVZkdCtnUGg2ZEhBcmMvbHkK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdEMkJDMDVEOUUzOTQ1QjgKUldTNFJUbWVYY0FyZlYwRVIwMFkvQStWOHlYS3hETXBaRlY2OFNiQXJhaExFekUyWlBCcXZ5U2UK",
       "endpoints": [
         "https://github.com/JoaEinsson/Cansche/releases/latest/download/latest.json"
       ]
