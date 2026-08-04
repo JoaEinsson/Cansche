@@ -9,11 +9,11 @@
   >
     <div
       v-if="selectedCount > 0"
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#161718] border border-[#23252a] px-3 py-1.5 rounded-[8px] shadow-2xl flex items-center space-x-3 text-xs font-medium select-none"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#161718] border border-[#23252a] px-3 py-1.5 rounded-[6px] shadow-design-xl flex items-center space-x-3 text-xs font-medium select-none"
     >
       <!-- Selection Counter -->
       <div class="flex items-center space-x-1.5 border-r border-[#23252a] pr-3">
-        <span class="px-1.5 py-0.5 rounded-[4px] bg-white font-mono font-bold text-[#08090a] text-[11px] shadow-xs">
+        <span class="px-1.5 py-0.5 rounded-[4px] bg-[#e5e5e6] font-mono font-semibold text-[#08090a] text-[11px] shadow-xs">
           {{ selectedCount }}
         </span>
         <span class="text-[#8a8f98] text-[11px]">
@@ -63,11 +63,11 @@
 
         <button
           @click="$emit('clear-cells')"
-          class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-[6px] border border-red-500/30 flex items-center space-x-1.5 text-[11px] transition-colors cursor-pointer"
+          class="px-2.5 py-1 bg-[#eb5757]/10 hover:bg-[#eb5757]/20 text-[#eb5757] rounded-[6px] border border-[#eb5757]/30 flex items-center space-x-1.5 text-[11px] transition-colors cursor-pointer"
           title="Limpar células selecionadas (Del)"
         >
           <span>Limpar</span>
-          <kbd class="text-[9px] font-mono text-red-400/80 bg-red-950/40 px-1 py-0.2 rounded border border-red-500/30">Del</kbd>
+          <kbd class="text-[9px] font-mono text-[#eb5757]/80 bg-[#eb5757]/10 px-1 py-0.2 rounded border border-[#eb5757]/30">Del</kbd>
         </button>
 
         <button

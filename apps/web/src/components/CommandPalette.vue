@@ -5,7 +5,7 @@
     @click.self="close"
   >
     <div
-      class="bg-[#0f1011] border border-[#23252a] rounded-[12px] w-full max-w-xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150"
+      class="bg-[#0f1011] border border-[#23252a] rounded-[12px] w-full max-w-xl shadow-design-xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150"
     >
       <!-- Command Input Header -->
       <div class="flex items-center px-4 border-b border-[#23252a] bg-[#08090a]">
@@ -37,12 +37,12 @@
             :key="cmd.id"
             @click="executeCommand(cmd)"
             @mouseenter="selectedIndex = index"
-            class="flex items-center justify-between px-3 py-2 rounded-[8px] cursor-pointer text-xs transition-colors"
+            class="flex items-center justify-between px-3 py-2 rounded-[6px] cursor-pointer text-xs transition-colors"
             :class="index === selectedIndex ? 'bg-[#161718] text-white border border-[#383b3f]' : 'text-[#8a8f98] hover:text-white border border-transparent'"
           >
             <div class="flex items-center space-x-2.5 min-w-0">
               <div class="p-1.5 rounded bg-[#08090a] border border-[#23252a] flex items-center justify-center shrink-0">
-                <IconRenderer :icon="cmd.icon || 'lucide:Zap'" :size="14" :color="index === selectedIndex ? '#02b8cc' : '#8a8f98'" />
+                <IconRenderer :icon="cmd.icon || 'lucide:Zap'" :size="14" :color="index === selectedIndex ? '#e4f222' : '#8a8f98'" />
               </div>
               <div class="truncate">
                 <div class="font-medium text-white text-xs truncate leading-tight">{{ cmd.title }}</div>
@@ -54,7 +54,7 @@
               <span class="text-[9px] font-mono text-[#62666d] uppercase px-1.5 py-0.2 rounded bg-[#08090a] border border-[#23252a]">
                 {{ cmd.category }}
               </span>
-              <span v-if="index === selectedIndex" class="text-[10px] font-mono text-[#02b8cc]">
+              <span v-if="index === selectedIndex" class="text-[10px] font-mono text-[#e4f222]">
                 ↵ Executar
               </span>
             </div>

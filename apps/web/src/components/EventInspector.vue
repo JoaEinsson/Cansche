@@ -1,7 +1,7 @@
 <template>
   <aside
     v-if="isOpen && item"
-    class="w-80 bg-[#0f1011] border-l border-[#23252a] flex flex-col h-full shrink-0 select-none p-4 space-y-4 text-xs text-[#d0d6e0] shadow-2xl z-20 overflow-y-auto animate-in slide-in-from-right duration-200"
+    class="w-80 bg-[#0f1011] border-l border-[#23252a] flex flex-col h-full shrink-0 select-none p-4 space-y-4 text-xs text-[#d0d6e0] shadow-design-xl z-20 overflow-y-auto animate-in slide-in-from-right duration-200"
   >
     <!-- Top Header: Close Button & Breadcrumb -->
     <div class="flex items-center justify-between border-b border-[#23252a] pb-3">
@@ -11,7 +11,7 @@
         <IconRenderer icon="lucide:ChevronRight" :size="10" color="#62666d" />
         <span class="truncate">{{ itemCategory || 'Modelo' }}</span>
         <IconRenderer icon="lucide:ChevronRight" :size="10" color="#62666d" />
-        <span class="text-[#02b8cc] font-bold">{{ formattedDate }}</span>
+        <span class="text-[#e4f222] font-semibold">{{ formattedDate }}</span>
       </div>
 
       <button
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Title & Icon Card -->
-    <div class="flex items-start space-x-3 bg-[#08090a] p-3 rounded-[8px] border border-[#23252a]">
+    <div class="flex items-start space-x-3 bg-[#08090a] p-3 rounded-[6px] border border-[#23252a]">
       <div class="p-2 rounded-[6px] bg-[#161718] border border-[#23252a] flex items-center justify-center shrink-0">
         <IconRenderer :icon="itemIcon" :size="20" :color="itemColor" />
       </div>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Details Section: Time & Location -->
-    <div class="space-y-2 bg-[#08090a] p-3 rounded-[8px] border border-[#23252a] font-mono text-[11px]">
+    <div class="space-y-2 bg-[#08090a] p-3 rounded-[6px] border border-[#23252a] font-mono text-[11px]">
       <div v-if="itemStartTime" class="flex items-center space-x-2 text-[#d0d6e0]">
         <IconRenderer icon="lucide:Clock" :size="14" color="#8a8f98" />
         <span>{{ itemStartTime }} — {{ itemEndTime }}</span>
@@ -62,7 +62,7 @@
       <div class="w-full h-1.5 bg-[#161718] rounded-full overflow-hidden border border-[#23252a]">
         <div
           class="h-full transition-all duration-300 rounded-full"
-          :class="progressPercent === 100 ? 'bg-emerald-400' : 'bg-white'"
+          :class="progressPercent === 100 ? 'bg-[#27a644]' : 'bg-[#383b3f]'"
           :style="{ width: progressPercent + '%' }"
         ></div>
       </div>
@@ -94,13 +94,13 @@
     <!-- Notes / Description -->
     <div v-if="itemDescription" class="space-y-1.5">
       <span class="text-[11px] font-medium text-white uppercase tracking-wider">Observações</span>
-      <div class="bg-[#08090a] p-3 rounded-[8px] border border-[#23252a] text-[11px] text-[#8a8f98] leading-relaxed whitespace-pre-wrap">
+      <div class="bg-[#08090a] p-3 rounded-[6px] border border-[#23252a] text-[11px] text-[#8a8f98] leading-relaxed whitespace-pre-wrap">
         {{ itemDescription }}
       </div>
     </div>
 
     <!-- AI Suggestions Slot (Reserved for future AI features) -->
-    <div class="p-3 rounded-[8px] bg-[#161718]/60 border border-[#23252a] border-dashed space-y-1 text-center">
+    <div class="p-3 rounded-[6px] bg-[#161718]/60 border border-[#23252a] border-dashed space-y-1 text-center">
       <div class="flex items-center justify-center space-x-1.5 text-xs text-[#8a8f98] font-medium">
         <IconRenderer icon="lucide:Zap" :size="13" color="#8a8f98" />
         <span>Sugestões de IA</span>
@@ -120,7 +120,7 @@
 
       <button
         @click="$emit('delete-event', item.event)"
-        class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-medium py-2 rounded-[6px] text-xs transition-colors cursor-pointer"
+        class="w-full bg-[#eb5757]/10 hover:bg-[#eb5757]/20 text-[#eb5757] border border-[#eb5757]/30 font-medium py-2 rounded-[6px] text-xs transition-colors cursor-pointer"
       >
         Excluir este Evento
       </button>
@@ -140,7 +140,7 @@ const item = computed(() => InspectorService.activeItem.value);
 
 const itemName = computed(() => item.value?.event?.overrides?.name || item.value?.model?.name || 'Evento');
 const itemIcon = computed(() => item.value?.event?.overrides?.emoji || item.value?.model?.emoji || 'lucide:Bookmark');
-const itemColor = computed(() => item.value?.event?.overrides?.color || item.value?.model?.color || item.value?.calendarColor || '#5e6ad2');
+const itemColor = computed(() => item.value?.event?.overrides?.color || item.value?.model?.color || item.value?.calendarColor || '#6366f1');
 const itemCategory = computed(() => item.value?.model?.metadata?.category || (item.value?.model as any)?.category);
 const itemStartTime = computed(() => item.value?.event?.overrides?.startTime || item.value?.model?.schedule?.startTime || (item.value?.model as any)?.startTime);
 const itemEndTime = computed(() => item.value?.event?.overrides?.endTime || item.value?.model?.schedule?.endTime || (item.value?.model as any)?.endTime || '23:59');

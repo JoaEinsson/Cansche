@@ -8,6 +8,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@cansche/domain": "workspace:*"
+    "@cansche/domain": "workspace:*",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-notification": "^2.0.0"
   }
 }

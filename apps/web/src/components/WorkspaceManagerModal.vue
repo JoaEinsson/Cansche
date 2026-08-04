@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 select-none">
-    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-lg shadow-2xl shadow-black/90 space-y-5 text-xs text-[#d0d6e0]">
+    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-lg shadow-design-xl space-y-5 text-xs text-[#d0d6e0]">
       <!-- Modal Header -->
       <div class="flex items-start justify-between border-b border-[#23252a] pb-4">
         <div>
@@ -9,6 +9,7 @@
         </div>
         <button
           @click="$emit('close')"
+          aria-label="Fechar"
           class="text-[#8a8f98] hover:text-white p-1 rounded-[6px] hover:bg-[#161718] transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,7 +22,7 @@
       <div class="grid grid-cols-3 gap-3">
         <button
           @click="showCreateForm = !showCreateForm"
-          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center transition-all cursor-pointer leading-tight shadow-xs"
+          class="bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] font-medium py-2.5 px-3 rounded-[6px] flex flex-col items-center justify-center text-center transition-all cursor-pointer leading-tight shadow-xs"
         >
           <span class="text-xs font-semibold">+ Novo</span>
           <span class="text-xs">Calendário</span>
@@ -63,7 +64,7 @@
               v-model="newCalName"
               type="text"
               placeholder="ex: 📚 Faculdade 2026"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -79,7 +80,7 @@
         </div>
         <div class="flex justify-end space-x-2">
           <button @click="showCreateForm = false" class="px-3 py-1.5 bg-[#23252a] hover:bg-[#383b3f] text-[#d0d6e0] rounded-[6px] text-xs font-medium">Cancelar</button>
-          <button @click="createCalendar" class="px-4 py-1.5 bg-white hover:bg-[#e5e5e6] text-[#08090a] rounded-[6px] text-xs font-medium">Salvar</button>
+          <button @click="createCalendar" class="px-4 py-1.5 bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] rounded-[6px] text-xs font-medium">Salvar</button>
         </div>
       </div>
 
@@ -141,7 +142,7 @@
             <button
               v-if="calendars.length > 1"
               @click="$emit('delete', cal.id)"
-              class="p-1.5 text-[#8a8f98] hover:text-red-400 hover:bg-[#23252a] rounded-[6px] transition-colors"
+              class="p-1.5 text-[#8a8f98] hover:text-[#eb5757] hover:bg-[#23252a] rounded-[6px] transition-colors"
               title="Excluir Calendário"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -188,7 +189,7 @@ const emit = defineEmits([
 
 const showCreateForm = ref(false);
 const newCalName = ref('');
-const newCalColor = ref('#5e6ad2');
+const newCalColor = ref('#6366f1');
 
 const sortedCalendars = computed(() => {
   return [...props.calendars].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

@@ -2,13 +2,13 @@
   <div
     v-if="isOpen && day"
     ref="popoverEl"
-    class="fixed z-40 w-64 bg-[#0f1011] border border-[#23252a] rounded-[10px] p-3 shadow-2xl shadow-black/90 text-xs text-[#d0d6e0] space-y-2 animate-in fade-in zoom-in-95"
+    class="fixed z-40 w-64 bg-[#0f1011] border border-[#23252a] rounded-[12px] p-3 shadow-design-xl text-xs text-[#d0d6e0] space-y-2 animate-in fade-in zoom-in-95"
     :style="popoverStyle"
   >
     <!-- Header: Day Title & Close -->
     <div class="flex items-center justify-between border-b border-[#23252a] pb-2">
       <div class="flex items-center space-x-1.5 font-mono">
-        <span class="font-bold text-white text-xs">{{ formattedDate }}</span>
+        <span class="font-semibold text-white text-xs">{{ formattedDate }}</span>
         <span class="text-[10px] text-[#8a8f98]">({{ day.events.length }} eventos)</span>
       </div>
       <button

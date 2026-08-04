@@ -1,14 +1,14 @@
 <template>
   <aside class="w-64 bg-linear-surface border-r border-linear-subtle flex flex-col h-full shrink-0 select-none p-3 space-y-4">
     <!-- Section 1: Camadas Visíveis (Layers) -->
-    <div class="space-y-2 border-b border-[#22232a] pb-3">
+    <div class="space-y-2 border-b border-[#23252a] pb-3">
       <div class="flex items-center justify-between px-1">
         <span class="text-[11px] font-semibold text-linear-muted uppercase tracking-wider">
           Camadas (Layers)
         </span>
         <button
           @click="$emit('open-workspace-manager')"
-          class="text-[10px] text-[#5e6ad2] hover:underline font-mono"
+          class="text-[10px] text-[#e4f222] hover:underline font-mono"
           title="Gerenciar Workspace"
         >
           ⚙️ Workspace
@@ -21,8 +21,8 @@
           v-for="cal in sortedCalendars"
           :key="cal.id"
           @click="$emit('select-editing-calendar', cal.id)"
-          class="group flex items-center justify-between px-2.5 py-1.5 rounded border transition-all cursor-pointer text-xs"
-          :class="cal.id === editingCalendarId ? 'bg-[#1c1d24] border-[#5e6ad2] text-white font-medium shadow-xs' : 'bg-transparent border-transparent hover:bg-[#14151a] text-slate-400'"
+          class="group flex items-center justify-between px-2.5 py-1.5 rounded-[6px] border transition-all cursor-pointer text-xs"
+          :class="cal.id === editingCalendarId ? 'bg-[#161718] border-[#e4f222] text-white font-medium shadow-xs' : 'bg-transparent border-transparent hover:bg-[#0f1011] text-[#8a8f98]'"
         >
           <div class="flex items-center space-x-2 truncate">
             <!-- Layer Color Dot -->
@@ -31,7 +31,7 @@
               :style="{ backgroundColor: cal.color }"
             ></span>
             <span class="truncate">{{ cal.name }}</span>
-            <span v-if="cal.id === editingCalendarId" class="text-[9px] text-[#5e6ad2] font-mono shrink-0">
+            <span v-if="cal.id === editingCalendarId" class="text-[9px] text-[#e4f222] font-mono shrink-0">
               [Edição]
             </span>
           </div>
@@ -39,7 +39,7 @@
           <!-- Layer Visibility Toggle Eye Icon -->
           <button
             @click.stop="$emit('toggle-layer-visibility', cal.id)"
-            class="p-1 rounded text-slate-500 hover:text-white transition-colors shrink-0"
+            class="p-1 rounded-[6px] text-[#62666d] hover:text-white transition-colors shrink-0"
             :title="isLayerActive(cal.id) ? 'Ocultar Camada' : 'Exibir Camada'"
           >
             <span v-if="isLayerActive(cal.id)" class="text-xs">👁️</span>
@@ -60,7 +60,7 @@
         </div>
         <button
           @click="$emit('open-create-modal')"
-          class="px-2.5 py-1 bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white rounded text-[11px] font-medium flex items-center gap-1 transition-colors shadow-sm"
+          class="px-2.5 py-1 bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] rounded-[6px] text-[11px] font-medium flex items-center gap-1 transition-colors shadow-xs"
           title="Criar Novo Template de Preset"
         >
           <span>+ Novo</span>
@@ -73,13 +73,13 @@
           v-for="preset in presets"
           :key="preset.id"
           @click="$emit('apply-preset', preset.id)"
-          class="group relative flex flex-col p-2.5 rounded-lg border border-[#22232a] bg-[#14151a] hover:bg-[#1c1d24] hover:border-[#2a2b36] transition-all cursor-pointer shadow-sm hover:scale-[1.01]"
+          class="group relative flex flex-col p-2.5 rounded-[6px] border border-[#23252a] bg-[#0f1011] hover:bg-[#161718] hover:border-[#383b3f] transition-all cursor-pointer shadow-xs hover:scale-[1.01]"
         >
           <!-- Top Row: Emoji, Name, Category & Color -->
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center space-x-2 min-w-0">
               <span class="text-base shrink-0 leading-none">{{ preset.emoji }}</span>
-              <span class="text-xs font-semibold text-white truncate group-hover:text-[#5e6ad2] transition-colors">
+              <span class="text-xs font-semibold text-white truncate group-hover:text-[#e4f222] transition-colors">
                 {{ preset.name }}
               </span>
             </div>
@@ -87,7 +87,7 @@
             <div class="flex items-center space-x-1.5 shrink-0">
               <span
                 v-if="preset.metadata?.category || preset.category"
-                class="text-[9px] px-1.5 py-0.2 rounded bg-[#22232a] text-slate-300 font-mono"
+                class="text-[9px] px-1.5 py-0.2 rounded-[4px] bg-[#23252a] text-[#d0d6e0] font-mono"
               >
                 {{ preset.metadata?.category || preset.category }}
               </span>
@@ -101,36 +101,36 @@
           <!-- Middle Row: Time range & Location -->
           <div
             v-if="getPresetStartTime(preset) || getPresetLocation(preset)"
-            class="flex items-center space-x-2 text-[10px] text-slate-400 font-mono mb-1"
+            class="flex items-center space-x-2 text-[10px] text-[#8a8f98] font-mono mb-1"
           >
             <span v-if="getPresetStartTime(preset)" class="flex items-center gap-1">
-              <svg class="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-3 h-3 text-[#62666d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {{ getPresetStartTime(preset) }} - {{ getPresetEndTime(preset) }}
             </span>
 
-            <span v-if="getPresetLocation(preset)" class="truncate text-slate-400">
+            <span v-if="getPresetLocation(preset)" class="truncate text-[#8a8f98]">
               📍 {{ getPresetLocation(preset) }}
             </span>
           </div>
 
           <!-- Bottom Row: Checklist count & Quick Actions -->
-          <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-[#1e1f26]">
+          <div class="flex items-center justify-between text-[10px] text-[#62666d] pt-1 border-t border-[#23252a]">
             <span v-if="getChecklistCount(preset) > 0">
               ☑ {{ getChecklistCount(preset) }} tarefas
             </span>
             <span v-else-if="getPresetDescription(preset)" class="truncate max-w-[120px]">
               {{ getPresetDescription(preset) }}
             </span>
-            <span v-else class="italic text-[9px] text-slate-600">
+            <span v-else class="italic text-[9px] text-[#62666d]">
               Template
             </span>
 
             <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-opacity">
               <button
                 @click.stop="$emit('edit-preset', preset)"
-                class="p-1 text-slate-400 hover:text-white rounded hover:bg-[#2a2b36] transition-colors"
+                class="p-1 text-[#8a8f98] hover:text-white rounded-[6px] hover:bg-[#383b3f] transition-colors"
                 title="Editar Template"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +139,7 @@
               </button>
               <button
                 @click.stop="$emit('delete-preset', preset.id)"
-                class="p-1 text-slate-400 hover:text-red-400 rounded hover:bg-[#2a2b36] transition-colors"
+                class="p-1 text-[#8a8f98] hover:text-[#eb5757] rounded-[6px] hover:bg-[#383b3f] transition-colors"
                 title="Excluir Template"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,8 +157,8 @@
     </div>
 
     <!-- Shortcut Hint Footer -->
-    <div class="p-2.5 rounded-lg bg-[#0b0c0e] border border-[#22232a] text-[10px] text-slate-400 space-y-1">
-      <div class="font-semibold text-slate-200 flex items-center gap-1">
+    <div class="p-2.5 rounded-[6px] bg-[#08090a] border border-[#23252a] text-[10px] text-[#8a8f98] space-y-1">
+      <div class="font-semibold text-[#d0d6e0] flex items-center gap-1">
         <span>👁️ Visão Composta de Camadas:</span>
       </div>
       <div>• `activeCalendarIds`: Camadas visíveis.</div>

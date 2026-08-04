@@ -1,13 +1,11 @@
 <template>
   <div
     class="h-8 shrink-0 bg-[#08090a] border-b border-[#23252a] flex items-center justify-between select-none text-[#8a8f98]"
-    data-tauri-drag-region
+    @mousedown="startDragging"
     @dblclick="toggleMaximize"
   >
-    <div class="flex items-center gap-2 pl-3 text-[11px] font-medium text-[#d0d6e0]" data-tauri-drag-region>
-      <span class="w-4 h-4 rounded-[3px] bg-white flex items-center justify-center font-bold text-[9px] text-[#08090a] tracking-tighter">
-        C
-      </span>
+    <div class="flex items-center gap-2 pl-3 text-[11px] font-medium text-[#d0d6e0]">
+      <img src="/cansche-mark.svg" alt="" class="w-4 h-4 rounded-[2px]" />
       <span>Cansche</span>
     </div>
 
@@ -34,7 +32,7 @@
 
       <button
         type="button"
-        class="w-11 h-full flex items-center justify-center hover:bg-[#c42b2b] hover:text-white transition-colors"
+        class="w-11 h-full flex items-center justify-center hover:bg-[#eb5757] hover:text-white transition-colors"
         title="Fechar"
         aria-label="Fechar janela"
         @click.stop="close"
@@ -71,8 +69,27 @@ async function refreshMaximizedState() {
   }
 }
 
+async function configureWindow() {
+  const currentWindow = getAppWindow();
+  if (!currentWindow) return;
+
+  try {
+    // Keep the runtime aligned with tauri.conf.json when an older
+    // installation is updated in place.
+    await currentWindow.setDecorations(false);
+  } catch {
+    // The static window configuration remains the source of truth.
+  }
+
+  await refreshMaximizedState();
+}
+
 async function minimize() {
   await getAppWindow()?.minimize();
+}
+
+async function startDragging() {
+  await getAppWindow()?.startDragging();
 }
 
 async function toggleMaximize() {
@@ -88,6 +105,6 @@ async function close() {
 }
 
 onMounted(() => {
-  void refreshMaximizedState();
+  void configureWindow();
 });
 </script>

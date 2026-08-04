@@ -5,9 +5,7 @@
     <header class="h-11 px-4 bg-[#08090a] border-b border-[#23252a] flex items-center justify-between text-xs font-medium text-[#d0d6e0]">
     <!-- Left: Brand & Active Workspace -->
     <div class="flex items-center space-x-3">
-      <div class="w-5 h-5 rounded-[4px] bg-white flex items-center justify-center font-bold text-[11px] text-[#08090a] tracking-tighter shadow-xs">
-        C
-      </div>
+        <img src="/cansche-mark.svg" alt="" class="w-5 h-5 rounded-[4px] shadow-xs" />
       <div class="flex items-center space-x-2">
         <span class="font-semibold text-white tracking-tight">Cansche</span>
         <span class="text-[#62666d]">/</span>
@@ -56,7 +54,7 @@
         class="bg-[#0f1011] hover:bg-[#161718] text-[#8a8f98] hover:text-white border border-[#23252a] hover:border-[#383b3f] px-3 py-1.5 rounded-[6px] flex items-center space-x-2 text-xs transition-colors cursor-pointer"
         title="Abrir Barra de Comandos (Ctrl+K)"
       >
-        <IconRenderer icon="lucide:Zap" :size="13" color="#02b8cc" />
+        <IconRenderer icon="lucide:Zap" :size="13" color="#e4f222" />
         <span>Comandos</span>
         <kbd class="text-[9px] font-mono text-[#62666d] bg-[#161718] px-1 rounded border border-[#23252a]">Ctrl+K</kbd>
       </button>
@@ -69,11 +67,11 @@
       <button
         @click="$emit('open-updates')"
         class="relative p-1.5 rounded-[6px] text-[#8a8f98] hover:text-white hover:bg-[#161718] transition-colors"
-        :class="updateStatus === 'available' ? 'text-[#02b8cc]' : ''"
+        :class="updateStatus === 'available' ? 'text-[#e4f222]' : ''"
         title="Atualizações"
       >
         <IconRenderer icon="lucide:RefreshCw" :size="14" :class="updateStatus === 'checking' ? 'animate-spin' : ''" />
-        <span v-if="updateStatus === 'available'" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#02b8cc] border border-[#08090a]"></span>
+        <span v-if="updateStatus === 'available'" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e4f222] border border-[#08090a]"></span>
       </button>
 
       <button

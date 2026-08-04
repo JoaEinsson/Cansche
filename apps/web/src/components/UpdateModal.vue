@@ -1,12 +1,12 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed bottom-4 right-4 z-50 w-80 bg-[#0f1011] border border-[#23252a] rounded-[10px] p-4 shadow-2xl transition-all select-none animate-in fade-in slide-in-from-bottom-4 duration-300"
+    class="fixed bottom-4 right-4 z-50 w-80 bg-[#0f1011] border border-[#23252a] rounded-[12px] p-4 shadow-design-xl transition-all select-none animate-in fade-in slide-in-from-bottom-4 duration-300"
   >
     <!-- Header -->
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center space-x-2">
-        <span class="w-2 h-2 rounded-full bg-[#02b8cc] animate-pulse"></span>
+        <span class="w-2 h-2 rounded-full bg-[#e4f222] animate-pulse"></span>
         <span class="text-xs font-semibold text-white">Nova Atualização Disponível</span>
       </div>
       <button
@@ -20,7 +20,7 @@
 
     <!-- Details -->
     <div class="space-y-1 mb-3">
-      <div class="text-sm font-bold text-[#02b8cc]">
+      <div class="text-sm font-semibold text-[#e4f222]">
         Cansche v{{ updateInfo?.latestVersion }}
       </div>
       <p class="text-[11px] text-[#8a8f98] line-clamp-3 leading-relaxed whitespace-pre-wrap">
@@ -36,7 +36,7 @@
       </div>
       <div class="w-full h-1.5 bg-[#161718] rounded-full overflow-hidden border border-[#23252a]">
         <div
-          class="h-full bg-[#02b8cc] transition-all duration-150"
+          class="h-full bg-[#e4f222] transition-all duration-150"
           :style="{ width: `${downloadPercent}%` }"
         ></div>
       </div>
@@ -54,7 +54,7 @@
       <button
         @click="startUpdate"
         :disabled="isDownloading"
-        class="px-3 py-1 text-xs font-medium bg-[#02b8cc] hover:bg-[#02b8cc]/80 text-[#08090a] rounded-[6px] transition-all cursor-pointer shadow-xs disabled:opacity-50"
+        class="px-3 py-1 text-xs font-medium bg-[#e4f222] hover:bg-[#e4f222]/80 text-[#08090a] rounded-[6px] transition-all cursor-pointer shadow-xs disabled:opacity-50"
       >
         {{ isDownloading ? 'Baixando...' : 'Atualizar e Reiniciar' }}
       </button>

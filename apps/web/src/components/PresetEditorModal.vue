@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 select-none">
-    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-md shadow-2xl shadow-black/90 space-y-4 text-xs text-[#d0d6e0]">
+    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-md shadow-design-xl space-y-4 text-xs text-[#d0d6e0]">
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-[#23252a] pb-4">
         <div class="flex items-center space-x-2.5">
@@ -14,6 +14,7 @@
         </div>
         <button
           @click="$emit('close')"
+          aria-label="Fechar"
           class="text-[#8a8f98] hover:text-white p-1 rounded-[6px] hover:bg-[#161718] transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +33,7 @@
               v-model="form.name"
               type="text"
               placeholder="ex: Aula Faculdade, Trabalho Remoto"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -41,7 +42,7 @@
               v-model="form.category"
               type="text"
               placeholder="ex: Estudo"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
         </div>
@@ -54,7 +55,7 @@
               v-model="form.emoji"
               type="text"
               maxLength="2"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-3 py-2 text-xs text-center focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -74,7 +75,7 @@
             <input
               v-model="form.startTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -82,7 +83,7 @@
             <input
               v-model="form.endTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -91,7 +92,7 @@
               v-model="form.location"
               type="text"
               placeholder="ex: Campus"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#5e6ad2]"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
         </div>
@@ -100,7 +101,7 @@
         <div>
           <label class="text-[#d0d6e0] font-medium block mb-1 flex items-center justify-between text-[11px]">
             <span>Checklist Padrão (Tarefas)</span>
-            <button @click="addChecklistItem" type="button" class="text-[11px] text-[#5e6ad2] hover:underline font-medium">+ Adicionar Item</button>
+              <button @click="addChecklistItem" type="button" class="text-[11px] text-[#e4f222] hover:underline font-medium">+ Adicionar Item</button>
           </label>
           
           <div class="space-y-1.5 max-h-24 overflow-y-auto pr-1">
@@ -113,9 +114,9 @@
                 v-model="form.checklistTemplate[index]"
                 type="text"
                 placeholder="ex: Revisar conteúdo da aula"
-                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#5e6ad2]"
+                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#e4f222]"
               />
-              <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-red-400">
+              <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-[#eb5757]">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -131,7 +132,7 @@
             v-model="form.description"
             rows="2"
             placeholder="Instruções padrão para este template..."
-            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-[#5e6ad2] resize-none"
+            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-[#e4f222] resize-none"
           ></textarea>
         </div>
       </div>
@@ -146,7 +147,7 @@
         </button>
         <button
           @click="save"
-          class="bg-[#5e6ad2] hover:bg-[#4f5bc4] text-white font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-md shadow-[#5e6ad2]/20 cursor-pointer"
+          class="bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] font-medium text-xs px-5 py-2 rounded-[6px] transition-colors shadow-xs cursor-pointer"
         >
           {{ isEditing ? 'Salvar Alterações' : 'Criar Template' }}
         </button>
@@ -181,7 +182,7 @@ const form = ref<{
 }>({
   name: '',
   emoji: '📚',
-  color: '#5e6ad2',
+  color: '#6366f1',
   category: '',
   startTime: '',
   endTime: '',
@@ -199,7 +200,7 @@ watch(
         id: preset.id,
         name: preset.name || '',
         emoji: preset.emoji || '📚',
-        color: preset.color || '#5e6ad2',
+        color: preset.color || '#6366f1',
         category: preset.metadata?.category || preset.category || '',
         startTime: preset.schedule?.startTime || preset.startTime || '',
         endTime: preset.schedule?.endTime || preset.endTime || '',
@@ -216,7 +217,7 @@ watch(
       form.value = {
         name: '',
         emoji: '📚',
-        color: '#5e6ad2',
+        color: '#6366f1',
         category: '',
         startTime: '',
         endTime: '',
@@ -244,7 +245,7 @@ function save() {
     id: form.value.id || '',
     name: form.value.name.trim(),
     emoji: form.value.emoji || '📚',
-    color: form.value.color || '#5e6ad2',
+    color: form.value.color || '#6366f1',
     schedule: {
       startTime: form.value.startTime || undefined,
       endTime: form.value.endTime || undefined,

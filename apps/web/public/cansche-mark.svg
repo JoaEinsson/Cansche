@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Cansche</title>
+  <desc id="desc">Calendário estruturado com uma marca circular em forma de C.</desc>
+  <rect width="1024" height="1024" rx="228" fill="#08090a"/>
+  <rect x="42" y="42" width="940" height="940" rx="194" fill="#0f1011" stroke="#23252a" stroke-width="20"/>
+  <rect x="152" y="188" width="720" height="670" rx="116" fill="#08090a" stroke="#d0d6e0" stroke-width="34"/>
+  <path d="M152 400h720" fill="none" stroke="#02b8cc" stroke-width="34"/>
+  <path d="M314 128v142M710 128v142" fill="none" stroke="#d0d6e0" stroke-width="42" stroke-linecap="round"/>
+  <path d="M252 516h112M430 516h112M608 516h112M252 654h112M430 654h112M608 654h112" fill="none" stroke="#383b3f" stroke-width="42" stroke-linecap="round"/>
+  <path d="M642 511a170 170 0 1 0 0 218" fill="none" stroke="#02b8cc" stroke-width="58" stroke-linecap="round"/>
+  <circle cx="642" cy="511" r="19" fill="#e4f222"/>
+  <circle cx="642" cy="729" r="19" fill="#e4f222"/>
+</svg>

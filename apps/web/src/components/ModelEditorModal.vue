@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 select-none">
-    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-md shadow-2xl shadow-black/90 space-y-4 text-xs text-[#d0d6e0]">
+    <div class="bg-[#0f1011] border border-[#23252a] rounded-[12px] p-6 w-full max-w-md shadow-design-xl space-y-4 text-xs text-[#d0d6e0]">
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-[#23252a] pb-4">
         <div class="flex items-center space-x-2.5">
@@ -16,6 +16,7 @@
         </div>
         <button
           @click="$emit('close')"
+          aria-label="Fechar"
           class="text-[#8a8f98] hover:text-white p-1 rounded-[6px] hover:bg-[#161718] transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -36,7 +37,7 @@
               v-model="form.name"
               type="text"
               placeholder="ex: Aula Faculdade, Trabalho Remoto"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -47,7 +48,7 @@
               v-model="form.category"
               type="text"
               placeholder="ex: Estudo"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
         </div>
@@ -73,7 +74,7 @@
               type="button"
               @click="selectLucideIcon(iconName)"
               class="p-2 rounded-[6px] border transition-all cursor-pointer flex items-center justify-center"
-              :class="form.emoji === 'lucide:' + iconName ? 'bg-[#161718] border-white text-white shadow-xs' : 'bg-[#08090a] border-[#23252a] text-[#8a8f98] hover:border-[#383b3f] hover:text-white'"
+              :class="form.emoji === 'lucide:' + iconName ? 'bg-[#161718] border-[#e4f222] text-white shadow-xs' : 'bg-[#08090a] border-[#23252a] text-[#8a8f98] hover:border-[#383b3f] hover:text-white'"
             >
               <IconRenderer :icon="'lucide:' + iconName" :size="16" :color="form.emoji === 'lucide:' + iconName ? form.color : undefined" />
             </button>
@@ -91,7 +92,7 @@
                   type="text"
                   placeholder="ex: 🚀"
                   @input="onCustomEmojiInput"
-                  class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs focus:outline-none focus:border-white font-mono"
+                  class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#e4f222] font-mono"
                 />
               </div>
             </div>
@@ -117,7 +118,7 @@
               name="startTime"
               v-model="form.startTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -127,7 +128,7 @@
               name="endTime"
               v-model="form.endTime"
               type="time"
-              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white border border-[#23252a] rounded-[6px] px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#e4f222]"
             />
           </div>
           <div>
@@ -138,7 +139,7 @@
               v-model="form.location"
               type="text"
               placeholder="ex: Campus"
-              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-white"
+              class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-3 py-2 text-xs focus:outline-none focus:border-[#e4f222]"
             />
           </div>
         </div>
@@ -163,9 +164,9 @@
                 v-model="form.checklistTemplate[index]"
                 type="text"
                 placeholder="ex: Revisar conteúdo da aula"
-                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-white"
+                class="flex-1 bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#e4f222]"
               />
-              <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-red-400">
+              <button @click="removeChecklistItem(index)" type="button" class="p-1 text-[#62666d] hover:text-[#eb5757]">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -183,7 +184,7 @@
             v-model="form.description"
             rows="2"
             placeholder="Instruções padrão para este modelo..."
-            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-white resize-none"
+            class="w-full bg-[#08090a] text-white placeholder-[#62666d] border border-[#23252a] rounded-[6px] p-2.5 text-xs focus:outline-none focus:border-[#e4f222] resize-none"
           ></textarea>
         </div>
       </div>
@@ -198,7 +199,7 @@
         </button>
         <button
           @click="save"
-          class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-xs cursor-pointer"
+          class="bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] font-medium text-xs px-5 py-2 rounded-[6px] transition-all shadow-xs cursor-pointer"
         >
           {{ isEditing ? 'Salvar Alterações' : 'Criar Modelo' }}
         </button>
@@ -253,7 +254,7 @@ const form = ref<{
 }>({
   name: '',
   emoji: 'lucide:GraduationCap',
-  color: '#5e6ad2',
+  color: '#6366f1',
   category: '',
   startTime: '',
   endTime: '',
@@ -274,7 +275,7 @@ watch(
         id: model.id,
         name: model.name || '',
         emoji: model.emoji || 'lucide:Bookmark',
-        color: model.color || '#5e6ad2',
+        color: model.color || '#6366f1',
         category: model.metadata?.category || (model as any).category || '',
         startTime: model.schedule?.startTime || (model as any).startTime || '',
         endTime: model.schedule?.endTime || (model as any).endTime || '',
@@ -294,7 +295,7 @@ watch(
         id: undefined,
         name: '',
         emoji: 'lucide:GraduationCap',
-        color: '#5e6ad2',
+        color: '#6366f1',
         category: '',
         startTime: '',
         endTime: '',
@@ -336,7 +337,7 @@ function save() {
     id: form.value.id || '',
     name: form.value.name.trim(),
     emoji: form.value.emoji || 'lucide:Bookmark',
-    color: form.value.color || '#5e6ad2',
+    color: form.value.color || '#6366f1',
     schedule: {
       startTime: form.value.startTime || undefined,
       endTime: form.value.endTime || undefined,

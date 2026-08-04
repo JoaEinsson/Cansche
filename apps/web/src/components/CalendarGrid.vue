@@ -172,7 +172,7 @@ function getEventsForDate(date: ISODate): EventViewItem[] {
         event: evt,
         model: parentModel,
         calendarName: cal.name,
-        calendarColor: cal.color || '#5e6ad2',
+        calendarColor: cal.color || '#6366f1',
       });
     }
   }

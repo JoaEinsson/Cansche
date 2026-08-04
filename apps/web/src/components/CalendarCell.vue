@@ -2,20 +2,20 @@
   <div
     @pointerdown="onPointerDownCell"
     @mouseenter="onMouseEnterCell"
-    class="relative flex flex-col h-full border rounded-[8px] transition-all select-none overflow-hidden group min-h-0"
+    class="relative flex flex-col h-full border rounded-[6px] transition-all select-none overflow-hidden group min-h-0"
     :class="[
       density === 'compact' ? 'p-1' : 'p-1.5',
       day.isCurrentMonth ? 'text-white border-[#23252a] bg-[#0f1011]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/60 opacity-40',
-      day.isToday ? 'border-[#02b8cc]/80 shadow-xs shadow-[#02b8cc]/20' : '',
-      day.isSelected ? 'ring-1 ring-[#02b8cc] border-[#02b8cc] bg-[#02b8cc]/10 opacity-100' : 'hover:border-[#383b3f]',
-      isDropTarget ? 'ring-2 ring-[#02b8cc] bg-[#02b8cc]/20 border-[#02b8cc] opacity-100' : ''
+      day.isToday ? 'border-[#e4f222]/80 shadow-xs shadow-[#e4f222]/20' : '',
+      day.isSelected ? 'ring-1 ring-[#e4f222] border-[#e4f222] bg-[#e4f222]/10 opacity-100' : 'hover:border-[#383b3f]',
+      isDropTarget ? 'ring-2 ring-[#e4f222] bg-[#e4f222]/20 border-[#e4f222] opacity-100' : ''
     ]"
   >
     <!-- Top Row: Day Number & Indicators (Today Dot & Overflow Badge) -->
     <div class="flex items-center justify-between mb-1 shrink-0">
       <span
         class="text-xs font-mono font-medium px-1 py-0.2 rounded transition-colors"
-        :class="day.isToday ? 'bg-[#02b8cc] text-[#08090a] font-bold' : (day.isCurrentMonth ? 'text-[#8a8f98] group-hover:text-white' : 'text-[#4e525a]')"
+        :class="day.isToday ? 'bg-[#e4f222] text-[#08090a] font-semibold' : (day.isCurrentMonth ? 'text-[#8a8f98] group-hover:text-white' : 'text-[#62666d]')"
       >
         {{ day.dayNumber }}
       </span>
@@ -32,7 +32,7 @@
         <!-- Today Cyan Dot Indicator -->
         <span
           v-if="day.isToday"
-          class="w-2 h-2 rounded-full bg-[#02b8cc] shadow-xs shadow-[#02b8cc]/80 shrink-0"
+          class="w-2 h-2 rounded-full bg-[#e4f222] shadow-xs shadow-[#e4f222]/80 shrink-0"
           title="Hoje"
         ></span>
 
@@ -40,7 +40,7 @@
         <button
           v-if="overflowCount > 0"
           @click.stop="$emit('open-overflow', { day, anchorEl: $el })"
-          class="text-[9px] font-mono px-1 rounded bg-[#161718] hover:bg-[#23252a] text-[#02b8cc] border border-[#23252a] transition-colors"
+          class="text-[9px] font-mono px-1 rounded bg-[#161718] hover:bg-[#23252a] text-[#e4f222] border border-[#23252a] transition-colors"
         >
           +{{ overflowCount }}
         </button>
@@ -52,7 +52,7 @@
       <!-- Drag Ghost Placeholder Preview -->
       <div
         v-if="isDropTarget && dragGhostItem"
-        class="px-1.5 py-0.5 rounded-[4px] border border-dashed border-[#02b8cc] bg-[#02b8cc]/20 text-[#02b8cc] text-[11px] font-mono flex items-center space-x-1 animate-pulse"
+        class="px-1.5 py-0.5 rounded-[4px] border border-dashed border-[#e4f222] bg-[#e4f222]/20 text-[#e4f222] text-[11px] font-mono flex items-center space-x-1 animate-pulse"
       >
         <span>+ {{ dragGhostItem.name }}</span>
       </div>

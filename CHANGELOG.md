@@ -26,10 +26,15 @@ O projeto segue Semantic Versioning.
 
 ### Fixed
 
+- Corrigido o funcionamento dos controles da barra de título customizada no desktop.
+- Corrigida a exportação de calendários e workspaces no desktop, com diálogo nativo para escolha do arquivo.
+
 - Corrigida a renderização dos nomes dos dias na grade mensal.
 - Corrigidos os ícones das configurações, atualizações e controles da janela.
 
 ### Changed
+
+- Adicionado o ícone oficial do Cansche em SVG e nos formatos gerados para desktop.
 
 - Substituída a barra de título nativa pela barra de título integrada do Cansche.
 

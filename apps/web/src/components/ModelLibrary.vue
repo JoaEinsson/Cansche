@@ -4,7 +4,7 @@
     <div class="p-3 border-b border-[#23252a] flex items-center justify-between">
       <button
         @click="$emit('open-workspace-manager')"
-        class="bg-white hover:bg-[#e5e5e6] text-[#08090a] font-medium px-3 py-1.5 rounded-[6px] text-xs transition-all shadow-xs cursor-pointer"
+        class="bg-[#e4f222] hover:bg-[#cbd922] text-[#08090a] font-medium px-3 py-1.5 rounded-[6px] text-xs transition-all shadow-xs cursor-pointer"
       >
         Workspace
       </button>
@@ -105,8 +105,8 @@
               :key="model.id"
               @pointerdown="onPointerDownModel($event, model)"
               @click="$emit('apply-model', model.id)"
-              class="p-2.5 rounded-[8px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs hover:shadow-md"
-              :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
+              class="p-2.5 rounded-[6px] bg-[#08090a] border border-[#23252a] hover:border-[#383b3f] transition-all cursor-grab active:cursor-grabbing group shadow-xs"
+              :class="isDraggingThisModel(model.id) ? 'opacity-35 border-dashed border-[#e4f222]' : ''"
             >
               <!-- Top Row: Icon, Name, Star & Category Tag -->
               <div class="flex items-center justify-between mb-1.5">
@@ -120,7 +120,7 @@
                     <IconRenderer
                       icon="lucide:Star"
                       :size="13"
-                      :color="model.favorite ? '#f59e0b' : '#62666d'"
+                      :color="model.favorite ? '#e4f222' : '#62666d'"
                     />
                   </button>
 
@@ -179,7 +179,7 @@
                   </button>
                   <button
                     @click.stop="$emit('delete-model', model.id)"
-                    class="p-1 text-[#8a8f98] hover:text-red-400 rounded hover:bg-[#23252a] transition-colors cursor-pointer"
+                    class="p-1 text-[#8a8f98] hover:text-[#eb5757] rounded hover:bg-[#23252a] transition-colors cursor-pointer"
                     title="Excluir Modelo"
                   >
                     <IconRenderer icon="lucide:Trash2" :size="12" color="#8a8f98" />

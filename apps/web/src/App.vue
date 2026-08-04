@@ -863,7 +863,7 @@ onMounted(async () => {
     engine.addModel({
       name: 'Aula Faculdade',
       emoji: 'lucide:GraduationCap',
-      color: '#5e6ad2',
+      color: '#6366f1',
       favorite: true,
       schedule: { startTime: '19:00', endTime: '22:30' },
       metadata: { category: 'Estudo' },
@@ -877,7 +877,7 @@ onMounted(async () => {
     engine.addModel({
       name: 'Trabalho Remoto',
       emoji: 'lucide:Briefcase',
-      color: '#3b82f6',
+      color: '#6366f1',
       schedule: { startTime: '08:00', endTime: '17:00' },
       metadata: { category: 'Trabalho' },
       content: {
@@ -889,7 +889,7 @@ onMounted(async () => {
     engine.addModel({
       name: 'Treino Academia',
       emoji: 'lucide:Dumbbell',
-      color: '#10b981',
+      color: '#27a644',
       schedule: { startTime: '07:00', endTime: '08:00' },
       metadata: { category: 'Saúde' },
       content: { location: 'SmartFit' }

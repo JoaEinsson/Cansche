@@ -4,8 +4,8 @@
     @click.stop="$emit('select-event', item)"
     @mouseenter="$emit('hover-event', { item, anchorEl: $el })"
     @mouseleave="$emit('unhover-event')"
-    class="group relative flex items-center justify-between px-1.5 py-0.5 rounded-[4px] text-[11px] font-medium leading-tight cursor-grab active:cursor-grabbing select-none transition-all border shadow-2xs"
-    :class="isBeingDragged ? 'opacity-35 border-dashed border-[#02b8cc]' : ''"
+    class="group relative flex items-center justify-between px-1.5 py-0.5 rounded-[4px] text-[11px] font-medium leading-tight cursor-grab active:cursor-grabbing select-none transition-all border shadow-xs"
+    :class="isBeingDragged ? 'opacity-35 border-dashed border-[#e4f222]' : ''"
     :style="pillStyle"
   >
     <!-- Left: Event Emoji / Icon & Title -->
@@ -68,7 +68,7 @@ const itemIcon = computed(() => {
 });
 
 const itemColor = computed(() => {
-  return props.item.event.overrides?.color || props.item.model?.color || props.item.calendarColor || '#5e6ad2';
+  return props.item.event.overrides?.color || props.item.model?.color || props.item.calendarColor || '#6366f1';
 });
 
 const itemStartTime = computed(() => {

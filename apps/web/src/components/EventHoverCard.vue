@@ -2,7 +2,7 @@
   <div
     v-if="isOpen && item"
     ref="cardEl"
-    class="fixed z-50 w-72 bg-[#0f1011] border border-[#23252a] rounded-[10px] p-3.5 shadow-2xl shadow-black/90 text-xs text-[#d0d6e0] space-y-2.5 pointer-events-auto transition-opacity duration-150 animate-in fade-in zoom-in-95"
+    class="fixed z-50 w-72 bg-[#0f1011] border border-[#23252a] rounded-[12px] p-3.5 shadow-design-xl text-xs text-[#d0d6e0] space-y-2.5 pointer-events-auto transition-opacity duration-150 animate-in fade-in zoom-in-95"
     :style="cardStyle"
     @mouseenter="$emit('cancel-hide')"
     @mouseleave="$emit('close')"
@@ -59,7 +59,7 @@
       <div class="w-full h-1.5 bg-[#161718] rounded-full overflow-hidden border border-[#23252a]">
         <div
           class="h-full transition-all duration-300 rounded-full"
-          :class="progressPercent === 100 ? 'bg-emerald-400' : 'bg-white'"
+          :class="progressPercent === 100 ? 'bg-[#27a644]' : 'bg-[#383b3f]'"
           :style="{ width: progressPercent + '%' }"
         ></div>
       </div>
@@ -86,7 +86,7 @@ const leftPos = ref(0);
 
 const itemName = computed(() => props.item?.event.overrides?.name || props.item?.model?.name || 'Evento');
 const itemIcon = computed(() => props.item?.event.overrides?.emoji || props.item?.model?.emoji || 'lucide:Bookmark');
-const itemColor = computed(() => props.item?.event.overrides?.color || props.item?.model?.color || props.item?.calendarColor || '#5e6ad2');
+const itemColor = computed(() => props.item?.event.overrides?.color || props.item?.model?.color || props.item?.calendarColor || '#6366f1');
 const itemCategory = computed(() => props.item?.model?.metadata?.category || (props.item?.model as any)?.category);
 const itemStartTime = computed(() => props.item?.event.overrides?.startTime || props.item?.model?.schedule?.startTime || (props.item?.model as any)?.startTime);
 const itemEndTime = computed(() => props.item?.event.overrides?.endTime || props.item?.model?.schedule?.endTime || (props.item?.model as any)?.endTime || '23:59');
