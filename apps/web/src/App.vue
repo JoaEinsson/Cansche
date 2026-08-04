@@ -5,12 +5,16 @@
       :current-month-label="currentMonthLabel"
       :can-undo="canUndo"
       :can-redo="canRedo"
+      :app-version="appVersion"
+      :update-status="updateStatus"
       @prev-month="prevMonth"
       @next-month="nextMonth"
       @today="goToToday"
       @undo="handleUndo"
       @redo="handleRedo"
       @open-command-palette="openCommandPalette"
+      @open-settings="handleOpenSettings"
+      @open-updates="handleOpenUpdates"
     />
 
     <!-- Main Workspace Layout -->
@@ -37,6 +41,10 @@
         :current-month="currentMonth"
         :visible-calendars="visibleCalendars"
         :selected-dates="selectedDates"
+        :week-starts-on="appSettings.calendar.weekStartsOn"
+        :show-weekends="appSettings.calendar.showWeekends"
+        :show-week-numbers="appSettings.calendar.showWeekNumbers"
+        :density="appSettings.calendar.density"
         @select-date="handleDateSelection"
         @toggle-checklist="handleToggleChecklist"
         @edit-model="handleEditModel"
@@ -100,6 +108,23 @@
       @dismiss="handleDismissUpdate"
       @start-download="handleStartDownloadUpdate"
     />
+
+    <SettingsModal
+      :is-open="isSettingsOpen"
+      :settings="appSettings"
+      :app-version="appVersion"
+      :updater-supported="updaterSupported"
+      :update-status="updateStatus"
+      :update-info="updateInfo"
+      :update-error="updateError"
+      :current-release="currentRelease"
+      :initial-section="settingsSection"
+      @close="isSettingsOpen = false"
+      @save-settings="handleSaveSettings"
+      @check-updates="() => checkForUpdates(true)"
+      @start-update="handleStartDownloadUpdate"
+      @open-workspace="handleOpenWorkspaceFromSettings"
+    />
   </div>
 </template>
 
@@ -108,15 +133,17 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ISODate, toISODate } from '@cansche/shared';
 import { Calendar, Workspace, Model, CalendarEvent, ClipboardData } from '@cansche/domain';
 import { CalendarEngine, ApplyModelCommand, ClearCellsCommand, PasteCommand, MoveCommand, ToggleFavoriteCommand, ConstraintValidator, ImportExportService } from '@cansche/engine';
-import { SelectionService } from '@cansche/selection';
 import { CalendarRepository, LocalStorageRepository } from '@cansche/repositories';
-import { DesktopPlatformAdapter, UpdateInfo, WebNoopUpdaterAdapter } from '@cansche/platform';
+import { DesktopPlatformAdapter, UpdateInfo, UpdateStatus, WebNoopUpdaterAdapter } from '@cansche/platform';
 import { ApplicationImportExportService, BackupService, NotificationService, UpdateService } from '@cansche/application';
 import { InspectorService } from './services/InspectorService';
 import { DragService } from './services/DragService';
 import { CommandPaletteService } from './services/CommandPaletteService';
 import { ModelCategoryService } from './services/ModelCategoryService';
 import { TauriUpdaterAdapter } from './services/TauriUpdaterAdapter';
+import { AppSettings, AppSettingsService } from './services/AppSettingsService';
+import { findBundledRelease } from './services/ChangelogService';
+import { getAppVersion, getBundledAppVersion } from './services/AppVersionService';
 
 import HeaderBar from './components/HeaderBar.vue';
 import ModelLibrary from './components/ModelLibrary.vue';
@@ -126,6 +153,7 @@ import SmartSelectionToolbar from './components/SmartSelectionToolbar.vue';
 import ModelEditorModal from './components/ModelEditorModal.vue';
 import WorkspaceManagerModal from './components/WorkspaceManagerModal.vue';
 import UpdateModal from './components/UpdateModal.vue';
+import SettingsModal from './components/SettingsModal.vue';
 import DragOverlay from './components/DragOverlay.vue';
 import CommandPalette from './components/CommandPalette.vue';
 
@@ -133,11 +161,35 @@ import CommandPalette from './components/CommandPalette.vue';
 const repository = new LocalStorageRepository();
 const platform = new DesktopPlatformAdapter();
 const engine = new CalendarEngine();
-const selectionService = new SelectionService();
+const selectionService = engine.selectionService;
+
+const appSettings = ref<AppSettings>(AppSettingsService.load());
+const appVersion = ref(getBundledAppVersion());
+const updateStatus = ref<UpdateStatus>('idle');
+const updateError = ref<string | null>(null);
+const isSettingsOpen = ref(false);
+const settingsSection = ref<'general' | 'calendar' | 'updates' | 'data' | 'about'>('general');
 
 const tauriAdapter = new TauriUpdaterAdapter();
 const updaterAdapter = tauriAdapter.isSupported() ? tauriAdapter : new WebNoopUpdaterAdapter();
-const updateService = new UpdateService(updaterAdapter);
+const updaterSupported = tauriAdapter.isSupported();
+const updatePreferences = {
+  isAutoCheckEnabled: () => appSettings.value.updates.autoCheckEnabled,
+  setAutoCheckEnabled: (enabled: boolean) => {
+    appSettings.value = AppSettingsService.save({
+      ...appSettings.value,
+      updates: { ...appSettings.value.updates, autoCheckEnabled: enabled },
+    });
+  },
+  getDismissedVersion: () => appSettings.value.updates.dismissedVersion,
+  dismissVersion: (version: string) => {
+    appSettings.value = AppSettingsService.save({
+      ...appSettings.value,
+      updates: { ...appSettings.value.updates, dismissedVersion: version },
+    });
+  },
+};
+const updateService = new UpdateService(updaterAdapter, updatePreferences, getAppVersion);
 
 const importExportService = new ApplicationImportExportService(repository, platform);
 const backupService = new BackupService(repository, platform);
@@ -145,8 +197,17 @@ const notificationService = new NotificationService(platform);
 
 // Reactive Application State
 const workspace = ref(engine.getWorkspace());
-const currentYear = ref(new Date().getFullYear());
-const currentMonth = ref(new Date().getMonth());
+const initialCalendarDate = (() => {
+  const now = new Date();
+  const savedMonth = appSettings.value.general.lastViewedMonth;
+  if (!appSettings.value.general.openToToday && savedMonth) {
+    const [year, month] = savedMonth.split('-').map(Number);
+    if (year && month) return new Date(year, month - 1, 1);
+  }
+  return now;
+})();
+const currentYear = ref(initialCalendarDate.getFullYear());
+const currentMonth = ref(initialCalendarDate.getMonth());
 const selectedDates = ref<ISODate[]>([]);
 const clipboardData = ref<ClipboardData | null>(engine.getClipboard());
 
@@ -165,6 +226,8 @@ const monthNames = [
 const currentMonthLabel = computed(() => {
   return `${monthNames[currentMonth.value]} ${currentYear.value}`;
 });
+
+const currentRelease = computed(() => findBundledRelease(appVersion.value));
 
 const allCalendars = computed(() => {
   if (!workspace.value?.calendars) return [];
@@ -227,6 +290,7 @@ function handleDuplicateCalendar(calendarId: string) {
 }
 
 function handleDeleteCalendar(calendarId: string) {
+  if (!confirmDestructiveAction('Excluir este calendário e todos os seus eventos?')) return;
   engine.deleteCalendar(calendarId);
   syncState();
   autoSave();
@@ -287,6 +351,7 @@ function handleSaveModel(modelData: Model) {
 }
 
 function handleDeleteModel(modelId: string) {
+  if (!confirmDestructiveAction('Excluir este modelo?')) return;
   engine.deleteModel(modelId);
   syncState();
   autoSave();
@@ -336,6 +401,7 @@ function handleToggleChecklist(payload: { eventId?: string; instanceId?: string;
 
 function handleDeleteEvent(evt: CalendarEvent) {
   if (evt && evt.id) {
+    if (!confirmDestructiveAction('Excluir este evento?')) return;
     engine.removeEvent(evt.id);
     InspectorService.close();
     syncState();
@@ -345,6 +411,7 @@ function handleDeleteEvent(evt: CalendarEvent) {
 
 function handleClearCells() {
   if (selectedDates.value.length === 0) return;
+  if (!confirmDestructiveAction('Limpar os eventos dos dias selecionados?')) return;
   engine.execute(new ClearCellsCommand(selectedDates.value));
   syncState();
   autoSave();
@@ -376,6 +443,11 @@ function handleUndo() {
   autoSave();
 }
 
+function confirmDestructiveAction(message: string): boolean {
+  if (!appSettings.value.general.confirmDestructiveActions) return true;
+  return typeof window === 'undefined' || window.confirm(message);
+}
+
 function handleRedo() {
   engine.redo();
   syncState();
@@ -386,7 +458,7 @@ function openCommandPalette() {
   CommandPaletteService.open();
 }
 
-async function checkForUpdates(isManual = false) {
+async function legacyCheckForUpdates(isManual = false) {
   const res = await updateService.checkForUpdates(isManual);
   if (res.hasUpdate) {
     updateInfo.value = res;
@@ -396,6 +468,57 @@ async function checkForUpdates(isManual = false) {
   }
 }
 
+async function checkForUpdates(isManual = false) {
+  if (!updaterSupported) {
+    updateStatus.value = 'unsupported';
+    if (isManual) {
+      notificationService.notify('Atualizações indisponíveis', 'O atualizador funciona somente no Cansche Desktop.');
+    }
+    return;
+  }
+
+  updateStatus.value = 'checking';
+  updateError.value = null;
+
+  try {
+    const result = await updateService.checkForUpdates(isManual);
+    updateInfo.value = result;
+
+    if (result.hasUpdate) {
+      updateStatus.value = 'available';
+      isUpdateModalOpen.value = true;
+    } else {
+      updateStatus.value = 'up-to-date';
+      if (isManual) {
+        notificationService.notify('Cansche atualizado', `Você já está usando a versão ${result.currentVersion}.`);
+      }
+    }
+  } catch (error) {
+    updateStatus.value = 'error';
+    updateError.value = error instanceof Error ? error.message : 'Não foi possível verificar atualizações.';
+    if (isManual) notificationService.notify('Erro ao verificar atualizações', updateError.value);
+  }
+}
+
+function handleOpenSettings() {
+  settingsSection.value = 'general';
+  isSettingsOpen.value = true;
+}
+
+function handleOpenUpdates() {
+  settingsSection.value = 'updates';
+  isSettingsOpen.value = true;
+}
+
+function handleSaveSettings(settings: AppSettings) {
+  appSettings.value = AppSettingsService.save(settings);
+}
+
+function handleOpenWorkspaceFromSettings() {
+  isSettingsOpen.value = false;
+  isWorkspaceManagerOpen.value = true;
+}
+
 function handleDismissUpdate() {
   if (updateInfo.value?.latestVersion) {
     updateService.dismissVersion(updateInfo.value.latestVersion);
@@ -403,7 +526,7 @@ function handleDismissUpdate() {
   isUpdateModalOpen.value = false;
 }
 
-async function handleStartDownloadUpdate(onProgress: (downloaded: number, total: number) => void) {
+async function legacyHandleStartDownloadUpdate(onProgress: (downloaded: number, total: number) => void) {
   try {
     await updateService.downloadAndInstall(onProgress);
   } catch (err) {
@@ -412,8 +535,31 @@ async function handleStartDownloadUpdate(onProgress: (downloaded: number, total:
   }
 }
 
+async function handleStartDownloadUpdate(onProgress: (downloaded: number, total: number) => void) {
+  updateStatus.value = 'downloading';
+  updateError.value = null;
+
+  try {
+    await updateService.downloadAndInstall(onProgress);
+    updateStatus.value = 'installing';
+  } catch (error) {
+    updateStatus.value = 'error';
+    updateError.value = error instanceof Error ? error.message : 'Falha ao baixar a atualização.';
+    notificationService.notify('Erro ao atualizar', updateError.value);
+  }
+}
+
 function registerSystemCommands() {
   CommandPaletteService.setCommands([
+    {
+      id: 'open-settings',
+      title: 'Abrir Configurações',
+      subtitle: 'Gerenciar preferências do aplicativo (Ctrl+,)',
+      keywords: ['configuracoes', 'preferencias', 'settings', 'ajustes'],
+      icon: 'lucide:Settings',
+      category: 'Sistema',
+      execute: () => handleOpenSettings(),
+    },
     {
       id: 'check-updates',
       title: 'Verificar Atualizações',
@@ -522,6 +668,7 @@ function prevMonth() {
   } else {
     currentMonth.value--;
   }
+  persistViewedMonth();
 }
 
 function nextMonth() {
@@ -531,12 +678,22 @@ function nextMonth() {
   } else {
     currentMonth.value++;
   }
+  persistViewedMonth();
+}
+
+function persistViewedMonth() {
+  const month = String(currentMonth.value + 1).padStart(2, '0');
+  appSettings.value = AppSettingsService.save({
+    ...appSettings.value,
+    general: { ...appSettings.value.general, lastViewedMonth: `${currentYear.value}-${month}` },
+  });
 }
 
 function goToToday() {
   const now = new Date();
   currentYear.value = now.getFullYear();
   currentMonth.value = now.getMonth();
+  persistViewedMonth();
   const today = toISODate(now);
   selectionService.selectSingleDate(today);
   selectedDates.value = [today];
@@ -631,6 +788,12 @@ function handleKeyDown(event: KeyboardEvent) {
     return;
   }
 
+  if (isCtrl && event.key === ',') {
+    event.preventDefault();
+    handleOpenSettings();
+    return;
+  }
+
   if (CommandPaletteService.isOpen.value) {
     return;
   }
@@ -687,6 +850,9 @@ onMounted(async () => {
 
   registerSystemCommands();
 
+  appVersion.value = await getAppVersion();
+  updateStatus.value = updaterSupported ? 'idle' : 'unsupported';
+
   const saved = await repository.getWorkspace();
   if (saved && saved.calendars && (saved.editingCalendarId || (saved as any).activeCalendarId)) {
     engine.setWorkspace(saved);
@@ -734,8 +900,10 @@ onMounted(async () => {
 
   syncState();
 
-  // Check for updates silently on startup
-  checkForUpdates(false);
+  // Check for updates silently on startup only when enabled in Settings.
+  if (appSettings.value.updates.autoCheckEnabled && updaterSupported) {
+    void checkForUpdates(false);
+  }
 });
 
 onUnmounted(() => {

@@ -1,10 +1,12 @@
 import { IUpdaterAdapter, UpdateInfo } from './UpdaterAdapter';
 
 export class WebNoopUpdaterAdapter implements IUpdaterAdapter {
+  constructor(private readonly version = 'web') {}
+
   public async check(): Promise<UpdateInfo> {
     return {
-      currentVersion: '1.0.0',
-      latestVersion: '1.0.0',
+      currentVersion: this.version,
+      latestVersion: this.version,
       hasUpdate: false,
       releaseNotes: '',
     };

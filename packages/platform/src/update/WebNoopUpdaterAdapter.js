@@ -1,8 +1,12 @@
 export class WebNoopUpdaterAdapter {
+    version;
+    constructor(version = 'web') {
+        this.version = version;
+    }
     async check() {
         return {
-            currentVersion: '1.0.0',
-            latestVersion: '1.0.0',
+            currentVersion: this.version,
+            latestVersion: this.version,
             hasUpdate: false,
             releaseNotes: '',
         };

@@ -61,6 +61,26 @@
 
     <!-- Right: History Commands -->
     <div class="flex items-center space-x-1.5">
+      <span class="hidden xl:inline text-[10px] font-mono text-[#62666d] mr-1">v{{ appVersion }}</span>
+
+      <button
+        @click="$emit('open-updates')"
+        class="relative p-1.5 rounded-[6px] text-[#8a8f98] hover:text-white hover:bg-[#161718] transition-colors"
+        :class="updateStatus === 'available' ? 'text-[#02b8cc]' : ''"
+        title="Atualizações"
+      >
+        <IconRenderer icon="lucide:RefreshCw" :size="14" :class="updateStatus === 'checking' ? 'animate-spin' : ''" />
+        <span v-if="updateStatus === 'available'" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#02b8cc] border border-[#08090a]"></span>
+      </button>
+
+      <button
+        @click="$emit('open-settings')"
+        class="p-1.5 rounded-[6px] text-[#8a8f98] hover:text-white hover:bg-[#161718] transition-colors"
+        title="Configurações (Ctrl+,)"
+      >
+        <IconRenderer icon="lucide:Settings" :size="14" />
+      </button>
+
       <button
         @click="$emit('undo')"
         :disabled="!canUndo"
@@ -99,7 +119,9 @@ defineProps<{
   currentMonthLabel: string;
   canUndo: boolean;
   canRedo: boolean;
+  appVersion: string;
+  updateStatus: string;
 }>();
 
-defineEmits(['prev-month', 'next-month', 'today', 'undo', 'redo', 'open-command-palette']);
+defineEmits(['prev-month', 'next-month', 'today', 'undo', 'redo', 'open-command-palette', 'open-settings', 'open-updates']);
 </script>

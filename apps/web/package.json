@@ -18,6 +18,7 @@
     "@cansche/selection": "workspace:*",
     "@cansche/shared": "workspace:*",
     "@cansche/storage": "workspace:*",
+    "@tauri-apps/api": "^2.0.0",
     "vue": "^3.4.0"
   },
   "devDependencies": {

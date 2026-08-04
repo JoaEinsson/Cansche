@@ -12,7 +12,9 @@
     "dev": "pnpm --filter @cansche/web dev",
     "build": "pnpm -r build",
     "test": "vitest run",
-    "changelog:extract": "node scripts/changelog/extract.mjs"
+    "changelog:extract": "node scripts/changelog/extract.mjs",
+    "release:set-version": "node scripts/release/version.mjs",
+    "release:validate": "node scripts/release/validate.mjs"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

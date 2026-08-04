@@ -5,7 +5,7 @@
     @keydown="onKeyDown"
   >
     <!-- Days of Week Header -->
-    <div class="grid grid-cols-7 gap-1.5 mb-1.5 text-center shrink-0">
+    <div class="grid gap-1.5 mb-1.5 text-center shrink-0" :class="showWeekends ? 'grid-cols-7' : 'grid-cols-5'">
       <div
         v-for="dayName in daysOfWeek"
         :key="dayName"
@@ -17,7 +17,8 @@
 
     <!-- High-Density Monthly Grid (Delegated to CalendarCell.vue) -->
     <div
-      class="flex-1 grid grid-cols-7 gap-1.5 auto-rows-fr overflow-hidden"
+      class="flex-1 grid auto-rows-fr overflow-hidden"
+      :class="[showWeekends ? 'grid-cols-7' : 'grid-cols-5', density === 'compact' ? 'gap-1' : 'gap-1.5']"
       @mouseleave="onMouseLeaveGrid"
       @mouseup="stopDragging"
     >
@@ -25,6 +26,9 @@
         v-for="day in calendarDays"
         :key="day.date"
         :day="day"
+        :density="density"
+        :week-starts-on="weekStartsOn"
+        :show-week-numbers="showWeekNumbers"
         @select-date="onSelectDate"
         @hover-event="onHoverEvent"
         @unhover-event="onUnhoverEvent"
@@ -74,11 +78,29 @@ const props = defineProps<{
   currentMonth: number;
   visibleCalendars: Calendar[];
   selectedDates: ISODate[];
+  weekStartsOn: 0 | 1;
+  showWeekends: boolean;
+  showWeekNumbers: boolean;
+  density: 'compact' | 'comfortable';
 }>();
 
 const emit = defineEmits(['select-date', 'toggle-checklist', 'edit-model', 'deselect']);
 
-const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const baseDaysOfWeek = [
+  { day: 0, label: 'Dom' },
+  { day: 1, label: 'Seg' },
+  { day: 2, label: 'Ter' },
+  { day: 3, label: 'Qua' },
+  { day: 4, label: 'Qui' },
+  { day: 5, label: 'Sex' },
+  { day: 6, label: 'Sáb' },
+];
+const daysOfWeek = computed(() => {
+  const ordered = props.weekStartsOn === 1
+    ? [...baseDaysOfWeek.slice(1), baseDaysOfWeek[0]]
+    : baseDaysOfWeek;
+  return props.showWeekends ? ordered : ordered.filter((item) => item.day !== 0 && item.day !== 6);
+});
 const isDragging = ref(false);
 
 function stopDragging() {
@@ -165,7 +187,7 @@ const calendarDays = computed(() => {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
 
-  const startDayOfWeek = firstDayOfMonth.getDay();
+  const startDayOfWeek = (firstDayOfMonth.getDay() - props.weekStartsOn + 7) % 7;
   const totalDays = lastDayOfMonth.getDate();
 
   const days: CalendarDayView[] = [];
@@ -200,7 +222,8 @@ const calendarDays = computed(() => {
     });
   }
 
-  const remainingCells = (7 - (days.length % 7)) % 7;
+  const columnCount = props.showWeekends ? 7 : 5;
+  const remainingCells = (columnCount - (days.length % columnCount)) % columnCount;
   for (let i = 1; i <= remainingCells; i++) {
     const d = new Date(year, month + 1, i);
     const iso = toISODate(d);
@@ -214,8 +237,15 @@ const calendarDays = computed(() => {
     });
   }
 
-  console.log(`[CANSCHE DIAG] 6. CalendarGrid re-calculou calendarDays. Total dias: ${days.length}. Total eventos renderizados no mês: ${totalEventsInGrid}`);
-  return days;
+  const visibleDays = props.showWeekends
+    ? days
+    : days.filter((day) => {
+        const weekday = new Date(`${day.date}T00:00:00`).getDay();
+        return weekday !== 0 && weekday !== 6;
+      });
+
+  console.log(`[CANSCHE DIAG] 6. CalendarGrid re-calculou calendarDays. Total dias: ${visibleDays.length}. Total eventos renderizados no mês: ${totalEventsInGrid}`);
+  return visibleDays;
 });
 
 function onSelectDate(payload: { date: ISODate; ctrlKey: boolean; shiftKey: boolean; isDrag: boolean }) {

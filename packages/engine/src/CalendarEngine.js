@@ -1,12 +1,15 @@
+import { generateId } from '@cansche/shared';
 import { Observable } from './Observable';
 import { HistoryService } from './HistoryService';
 import { ClipboardService } from './ClipboardService';
 import { ImportExportService } from './ImportExportService';
+import { SelectionService } from '@cansche/selection';
 export class CalendarEngine {
     workspace;
     onStateChanged = new Observable();
     historyService = new HistoryService();
     clipboardService = new ClipboardService();
+    selectionService = new SelectionService();
     clipboardData = null;
     constructor(initialWorkspace) {
         if (initialWorkspace && initialWorkspace.calendars && Object.keys(initialWorkspace.calendars).length > 0) {
@@ -18,9 +21,9 @@ export class CalendarEngine {
         this.ensureEditingCalendar();
     }
     createDefaultWorkspace() {
-        const defaultCalId = `cal-${Date.now()}`;
+        const defaultCalId = generateId('cal');
         return {
-            id: `ws-${Date.now()}`,
+            id: generateId('ws'),
             name: 'Meu Workspace',
             editingCalendarId: defaultCalId,
             activeCalendarIds: [defaultCalId],
@@ -74,7 +77,7 @@ export class CalendarEngine {
         }
     }
     createCalendar(name, color) {
-        const id = `cal-${Date.now()}`;
+        const id = generateId('cal');
         const newCal = {
             id,
             name,
@@ -85,6 +88,7 @@ export class CalendarEngine {
             events: {},
         };
         this.workspace.calendars[id] = newCal;
+        this.workspace.activeCalendarIds = Array.from(new Set([...(this.workspace.activeCalendarIds || []), id]));
         this.workspace.editingCalendarId = id;
         this.onStateChanged.notify(this.workspace);
         return newCal;
@@ -97,6 +101,7 @@ export class CalendarEngine {
         copy.name = `${source.name} (Cópia)`;
         copy.order = Object.keys(this.workspace.calendars).length;
         this.workspace.calendars[copy.id] = copy;
+        this.workspace.activeCalendarIds = Array.from(new Set([...(this.workspace.activeCalendarIds || []), copy.id]));
         this.workspace.editingCalendarId = copy.id;
         this.onStateChanged.notify(this.workspace);
         return copy;
@@ -106,6 +111,7 @@ export class CalendarEngine {
             return;
         }
         delete this.workspace.calendars[calendarId];
+        this.workspace.activeCalendarIds = (this.workspace.activeCalendarIds || []).filter((id) => id !== calendarId);
         this.ensureEditingCalendar();
         this.onStateChanged.notify(this.workspace);
     }
@@ -113,7 +119,7 @@ export class CalendarEngine {
         const activeCal = this.getActiveCalendar();
         if (!activeCal.models)
             activeCal.models = {};
-        const id = `model-${Date.now()}`;
+        const id = generateId('model');
         const newModel = { ...model, id };
         activeCal.models[id] = newModel;
         this.onStateChanged.notify(this.workspace);

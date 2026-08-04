@@ -2,8 +2,9 @@
   <div
     @pointerdown="onPointerDownCell"
     @mouseenter="onMouseEnterCell"
-    class="relative flex flex-col h-full border rounded-[8px] p-1.5 transition-all select-none overflow-hidden group min-h-0"
+    class="relative flex flex-col h-full border rounded-[8px] transition-all select-none overflow-hidden group min-h-0"
     :class="[
+      density === 'compact' ? 'p-1' : 'p-1.5',
       day.isCurrentMonth ? 'text-white border-[#23252a] bg-[#0f1011]' : 'text-[#62666d] border-[#161718] bg-[#08090a]/60 opacity-40',
       day.isToday ? 'border-[#02b8cc]/80 shadow-xs shadow-[#02b8cc]/20' : '',
       day.isSelected ? 'ring-1 ring-[#02b8cc] border-[#02b8cc] bg-[#02b8cc]/10 opacity-100' : 'hover:border-[#383b3f]',
@@ -20,6 +21,14 @@
       </span>
 
       <div class="flex items-center space-x-1.5">
+        <span
+          v-if="showWeekNumbers && isWeekStart"
+          class="text-[9px] font-mono text-[#62666d]"
+          :title="`Semana ${weekNumber}`"
+        >
+          S{{ weekNumber }}
+        </span>
+
         <!-- Today Cyan Dot Indicator -->
         <span
           v-if="day.isToday"
@@ -79,6 +88,9 @@ export interface CalendarDayView {
 
 const props = defineProps<{
   day: CalendarDayView;
+  density: 'compact' | 'comfortable';
+  weekStartsOn: 0 | 1;
+  showWeekNumbers: boolean;
 }>();
 
 const emit = defineEmits([
@@ -105,6 +117,15 @@ const overflowCount = computed(() => {
 const isDropTarget = computed(() => {
   const st = DragService.state;
   return st.isDragging && st.hoverDate === props.day.date;
+});
+
+const isWeekStart = computed(() => new Date(`${props.day.date}T00:00:00`).getDay() === props.weekStartsOn);
+const weekNumber = computed(() => {
+  const date = new Date(`${props.day.date}T00:00:00`);
+  const day = date.getDay() || 7;
+  date.setDate(date.getDate() + 4 - day);
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 });
 
 const dragGhostItem = computed(() => {

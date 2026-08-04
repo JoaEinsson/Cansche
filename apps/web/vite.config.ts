@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import fs from 'fs';
 import path from 'path';
+
+const tauriConfigPath = path.resolve(__dirname, '../desktop/src-tauri/tauri.conf.json');
+const tauriConfig = JSON.parse(fs.readFileSync(tauriConfigPath, 'utf8')) as { version: string };
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __CANSCHE_APP_VERSION__: JSON.stringify(tauriConfig.version),
+  },
+  server: {
+    fs: {
+      allow: [path.resolve(__dirname, '../..')],
+    },
+  },
   resolve: {
     alias: {
       '@cansche/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),

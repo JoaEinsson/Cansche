@@ -90,6 +90,9 @@ importers:
       '@cansche/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      '@tauri-apps/api':
+        specifier: ^2.0.0
+        version: 2.11.1
       vue:
         specifier: ^3.4.0
         version: 3.5.40(typescript@5.9.3)

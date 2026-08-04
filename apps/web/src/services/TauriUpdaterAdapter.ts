@@ -7,11 +7,20 @@ export class TauriUpdaterAdapter implements IUpdaterAdapter {
     return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
   }
 
+  private async getCurrentVersion(): Promise<string> {
+    if (!this.isSupported()) return 'web';
+
+    const { getVersion } = await import('@tauri-apps/api/app');
+    return getVersion();
+  }
+
   public async check(): Promise<UpdateInfo> {
+    const currentVersion = await this.getCurrentVersion();
+
     if (!this.isSupported()) {
       return {
-        currentVersion: '1.0.0',
-        latestVersion: '1.0.0',
+        currentVersion,
+        latestVersion: currentVersion,
         hasUpdate: false,
       };
     }
@@ -20,25 +29,26 @@ export class TauriUpdaterAdapter implements IUpdaterAdapter {
       const { check } = await import('@tauri-apps/plugin-updater');
       const update = await check();
 
-      if (update && update.available) {
+      if (update) {
         this.activeUpdate = update;
         return {
-          currentVersion: update.currentVersion,
+          currentVersion: update.currentVersion || currentVersion,
           latestVersion: update.version,
           hasUpdate: true,
           releaseNotes: update.body || 'Nova versão do Cansche disponível!',
           publishedAt: update.date,
         };
       }
-    } catch (err) {
-      console.warn('TauriUpdaterAdapter check failed silently:', err);
-    }
 
-    return {
-      currentVersion: '1.0.0',
-      latestVersion: '1.0.0',
-      hasUpdate: false,
-    };
+      return {
+        currentVersion,
+        latestVersion: currentVersion,
+        hasUpdate: false,
+      };
+    } catch (error) {
+      console.warn('TauriUpdaterAdapter check failed:', error);
+      throw error;
+    }
   }
 
   public async downloadAndInstall(onProgress?: (downloaded: number, total: number) => void): Promise<void> {
@@ -61,9 +71,7 @@ export class TauriUpdaterAdapter implements IUpdaterAdapter {
           break;
         case 'Progress':
           downloaded += event.data.chunkLength;
-          if (onProgress) {
-            onProgress(downloaded, contentLength);
-          }
+          onProgress?.(downloaded, contentLength);
           break;
         case 'Finished':
           break;
@@ -73,8 +81,9 @@ export class TauriUpdaterAdapter implements IUpdaterAdapter {
     try {
       const { relaunch } = await import('@tauri-apps/plugin-process');
       await relaunch();
-    } catch (e) {
-      console.warn('Relaunch invoke failed:', e);
+    } catch (error) {
+      console.warn('Relaunch invoke failed:', error);
+      throw error;
     }
   }
 }

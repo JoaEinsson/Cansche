@@ -1,262 +1,251 @@
-# Cansche: High-Throughput Component-Based Calendar & Productivity Core
+# Cansche
 
-A high-productivity personal planning system designed for batch scheduling, component-based event templating, multi-layer calendar composition, and intelligent constraint validation. Cansche models time allocation using paradigms inspired by visual design systems (Figma Components) and spreadsheet calculation engines.
+Cansche é um editor de calendários offline-first orientado a produtividade e edição em lote. O projeto trata o calendário como uma grade de trabalho: operações que seriam repetitivas em eventos individuais devem ser rápidas, previsíveis e reversíveis.
 
----
+A interface principal é uma aplicação Vue. A versão desktop é empacotada com Tauri e possui suporte a atualização assinada por releases do GitHub.
 
-## Table of Contents
+## Status
 
-- [1. Overview](#1-overview)
-- [2. System Architecture and Core Concepts](#2-system-architecture-and-core-concepts)
-  - [2.1 Component-Based Models and Inheritance](#21-component-based-models-and-inheritance)
-  - [2.2 Calendar Events and Checklist State](#22-calendar-events-and-checklist-state)
-  - [2.3 Multi-Calendar Layer Composition](#23-multi-calendar-layer-composition)
-  - [2.4 Command Pattern and Undo/Redo Engine](#24-command-pattern-and-undoredo-engine)
-  - [2.5 Productivity Core (V1.3 Features)](#25-productivity-core-v13-features)
-- [3. Repository Structure](#3-repository-structure)
-- [4. Prerequisites and Environment](#4-prerequisites-and-environment)
-- [5. Installation](#5-installation)
-- [6. Running and Building the Application](#6-running-and-building-the-application)
-  - [6.1 Web Development & Build](#61-web-development--build)
-  - [6.2 Desktop Build (Windows .exe / .msi)](#62-desktop-build-windows-exe--msi)
-- [7. Testing and Verification](#7-testing-and-verification)
-- [8. Data Exchange Format Specification (`.cansche.json`)](#8-data-exchange-format-specification-canschejson)
-- [9. Development & Architecture Guidelines](#9-development--architecture-guidelines)
-- [10. License](#10-license)
+O projeto está em desenvolvimento ativo. O release desktop atualmente preparado no repositório é a versão 1.2.0.
 
----
+O foco atual é consolidar o engine de calendário, a persistência local, a edição em massa e a experiência de atualização do aplicativo. Integrações com serviços externos e colaboração em tempo real não fazem parte do escopo atual.
 
-## 1. Overview
+## Principais recursos
 
-Traditional digital calendar software relies on individual event creation forms, making bulk scheduling across multi-week or multi-month intervals inefficient. Cansche addresses this limitation by introducing batch selection algorithms, reusable master component templates (Models), layer-based composition, and intelligent event dependency tracking.
+- Workspaces com um ou mais calendários.
+- Grade mensal para visualização e edição de eventos.
+- Modelos reutilizáveis para criação rápida de eventos.
+- Camadas para organizar, filtrar, colorir e controlar a visibilidade de eventos.
+- Seleção de múltiplos itens e operações em lote.
+- Histórico de comandos com suporte a desfazer e refazer.
+- Importação e exportação de calendários e workspaces em arquivos JSON no formato Cansche.
+- Configurações persistidas localmente para comportamento geral, visualização do calendário e atualizações.
+- Controle para ativar ou desativar a verificação automática de atualizações.
+- Área de atualização com estado da verificação, versão instalada, versão disponível e changelog do aplicativo.
+- Atualizações do desktop assinadas e distribuídas pelo GitHub Releases.
 
-Key functional capabilities include:
-- **Batch Range Selection**: Select single dates, arbitrary date spans, or programmatic patterns (e.g., all Saturdays, all weekends).
-- **Master Templates (Models)**: Define reusable schedule templates containing time allocations, locations, categories, tags, priority levels, and default checklist procedures.
-- **Favorites & Usage Metrics (★)**: Star favorite models to keep them pinned at the top of the library, sorted by usage frequency and recency.
-- **Command Palette (`Ctrl+K`)**: Raycast-style keyboard-driven palette to execute any system command, search models, or jump to dates instantly.
-- **Task Dependency Graph**: Model task dependencies (`finish-start`, `start-start`, `finish-finish`) with real-time **cycle detection** preventing circular dependencies (`A -> B -> A`).
-- **Constraint Validation**: Define weekday rules (`WeekdayConstraint`) and weekly/monthly quotas (`CountConstraint`) for intelligent schedule enforcement.
-- **Layered Composition**: Overlap multiple calendar layers (e.g., Academic, Work, Personal) onto a single high-density monthly view without merging underlying data models.
-- **Cross-Platform**: Runs in web browsers and natively as a desktop application on Windows (via Tauri v2).
+## Arquitetura
 
----
+O projeto separa a interface, os casos de uso, as regras de domínio e as integrações de plataforma:
 
-## 2. System Architecture and Core Concepts
-
-### 2.1 Component-Based Models and Inheritance
-
-In Cansche, a **Model** represents a reusable master configuration schema. Models encapsulate default properties, tags, priority, and constraints:
-
-```typescript
-export interface Model {
-  id: string;
-  name: string;
-  emoji: string;
-  color: string;
-  favorite?: boolean;
-  usageCount?: number;
-  lastUsed?: string;
-  tags?: string[]; // Array of Tag IDs
-  priority?: 'low' | 'medium' | 'high';
-  constraints?: ModelConstraint[];
-  schedule?: {
-    startTime?: string;
-    endTime?: string;
-    timezone?: string;
-  };
-  metadata?: {
-    category?: string;
-    tags?: string[];
-  };
-  content?: {
-    description?: string;
-    location?: string;
-    checklistTemplate?: string[];
-  };
-}
+```text
+Vue UI
+  |
+Application services
+  |
+Calendar Engine
+  |
+Domain models and commands
+  |
+Repositories, storage and platform adapters
 ```
 
-### 2.2 Calendar Events and Checklist State
+O engine não deve depender de Vue, Tauri, APIs do navegador ou de um mecanismo específico de persistência. A interface chama os serviços da aplicação e do engine; ela não deve alterar diretamente o estado de domínio.
 
-When a Model is applied to one or more dates, a `CalendarEvent` instance is created inside `calendar.events`:
+### Camadas
 
-- **Inheritance**: Unmodified fields fall back dynamically to the parent `Model` definition.
-- **Overrides**: Specific date instances can override properties (e.g., location or custom start time) without breaking the reference link.
-- **Isolated Checklist State**: Each event maintains a date-specific completion state (`checklistState: ChecklistItem[]`).
+- `apps/web`: interface Vue executada no navegador e usada como frontend do desktop.
+- `apps/desktop`: shell Tauri, configuração do bundle, permissões e pipeline de atualização.
+- `packages/domain`: modelos e contratos do domínio, incluindo workspace, calendário, evento, modelo e camada.
+- `packages/engine`: regras de negócio, composição de calendários, seleção, histórico e importação/exportação.
+- `packages/application`: casos de uso e serviços que coordenam engine, plataforma e atualização.
+- `packages/platform`: portas e adaptadores para recursos do navegador e do desktop.
+- `packages/repositories`: repositórios usados para carregar e salvar o estado da aplicação.
+- `packages/storage`: implementações de persistência local.
+- `packages/selection`: seleção de entidades do domínio.
+- `packages/api`: contratos destinados a futuras integrações de API.
+- `packages/shared`: tipos e utilitários compartilhados.
+- `scripts`: automações de release e tarefas de suporte.
 
-```typescript
-export interface CalendarEvent {
-  id: string;
-  date: ISODate;
-  modelId?: string;
-  source: 'model' | 'manual' | 'google';
-  overrides?: EventOverrides;
-  checklistState: ChecklistItem[];
-  createdAt: string;
-  modifiedAt?: string;
-}
-```
+## Estrutura do repositório
 
-### 2.3 Multi-Calendar Layer Composition
-
-The system structures user data inside a top-level `Workspace` container holding a collection of `Calendar` layers.
-
-- `activeCalendarIds: string[]`: Defines the active set of calendar layers rendered simultaneously on the grid.
-- `editingCalendarId: string`: Designates the target calendar layer currently selected to receive new model applications.
-
-### 2.4 Command Pattern and Undo/Redo Engine
-
-All state mutations in Cansche execute via encapsulated commands implementing the `Command` interface:
-
-```typescript
-export interface Command {
-  description: string;
-  execute(context: EngineContext): void;
-  undo(context: EngineContext): void;
-}
-```
-
-Command operations (such as `ApplyModelCommand`, `ClearCellsCommand`, `MoveCommand`, `ToggleFavoriteCommand`, and `PasteCommand`) support deterministic undo/redo history stacks and multi-date clipboard buffers with relative day offsets and non-destructive event merging.
-
-### 2.5 Productivity Core (V1.3 Features)
-
-- **DependencyGraph**: Managed in `@cansche/engine`, uses Depth-First Search (DFS) recursion stack tracking to reject dependency loops (`A -> B -> A`).
-- **ConstraintValidator**: Validates model rules (`WeekdayConstraint`, `CountConstraint`) prior to applying or moving events.
-- **Desktop Pointer Drag & Drop**: Smooth 6px threshold drag-and-drop service (`DragService`) supporting hover previews and `Ctrl` copy mode.
-
----
-
-## 3. Repository Structure
-
-Cansche is implemented as a monorepo managed via `pnpm` workspaces.
-
-```
+```text
 .
-├── apps/
-│   ├── web/                   # Vue 3 + Vite + Tailwind CSS Single Page Application
-│   └── desktop/               # Tauri v2 + Rust Multi-Platform Desktop Application
-├── packages/
-│   ├── api/                   # High-level reactive API facade (CalendarAPI)
-│   ├── domain/                # Pure TypeScript domain interfaces and type definitions
-│   ├── engine/                # Core execution engine, Command pattern, History, I/O, DependencyGraph
-│   ├── platform/              # Platform abstraction adapters (Web & Desktop)
-│   ├── repositories/          # LocalStorage & IndexedDB repository implementations
-│   ├── selection/             # Selection service and batch filtering algorithms
-│   └── shared/                # Pure ISO-date utility functions and ID generators
-├── DESIGN.md                  # Comprehensive design system reference manual
-├── package.json               # Root workspace configuration
-└── pnpm-workspace.yaml        # Workspace package boundaries
+|-- apps
+|   |-- desktop
+|   |   `-- src-tauri
+|   `-- web
+|-- packages
+|   |-- api
+|   |-- application
+|   |-- domain
+|   |-- engine
+|   |-- platform
+|   |-- repositories
+|   |-- selection
+|   |-- shared
+|   `-- storage
+|-- scripts
+|   |-- changelog
+|   `-- release
+|-- CHANGELOG.md
+|-- CONTRIBUTING_AI.md
+|-- LICENSE
+`-- package.json
 ```
 
----
+## Requisitos
 
-## 4. Prerequisites and Environment
+Para desenvolvimento web:
 
-Ensure your local development environment meets the following requirements:
+- Node.js 20 ou superior.
+- pnpm 9.15.0, conforme definido em `package.json`.
 
-- **Node.js**: Version 20.0.0 LTS or higher (Node.js 22 LTS recommended).
-- **Package Manager**: `pnpm` version 9.0.0 or higher.
-- **Rust / Tauri CLI** (for Desktop builds): Rust 1.75+ and Windows C++ build tools (MSVC).
+Para desenvolvimento e build desktop:
 
----
+- Rust stable com os componentes padrão da plataforma.
+- Requisitos de build do Tauri para o sistema operacional utilizado.
+- No Windows, WebView2 e as ferramentas de compilação MSVC.
+- No Linux, as bibliotecas GTK/WebKit e demais dependências do Tauri.
 
-## 5. Installation
+## Instalação
 
-Clone the repository and install all workspace dependencies:
+Clone o repositório e instale as dependências:
 
 ```bash
-git clone https://github.com/user/cansche.git
-cd cansche
+git clone https://github.com/JoaEinsson/Cansche.git
+cd Cansche
+corepack enable
 pnpm install
 ```
 
----
+Se o Corepack não estiver disponível, instale manualmente o pnpm 9.15.0 antes de executar `pnpm install`.
 
-## 6. Running and Building the Application
+## Desenvolvimento
 
-### 6.1 Web Development & Build
-
-To start the Vite development server with hot-module replacement (HMR):
+Inicie a aplicação web em modo de desenvolvimento:
 
 ```bash
 pnpm dev
 ```
 
-To type-check and compile all workspace packages:
+Para iniciar a aplicação desktop com Tauri:
+
+```bash
+pnpm --filter @cansche/desktop tauri dev
+```
+
+O frontend é servido pelo Vite e consumido pelo shell Tauri durante o desenvolvimento.
+
+## Build e testes
+
+Build completo do workspace:
 
 ```bash
 pnpm build
 ```
 
-### 6.2 Desktop Build (Windows .exe / .msi)
-
-To generate production-ready desktop installers for Windows:
+Build somente do frontend web:
 
 ```bash
-pnpm --filter desktop tauri build
+pnpm --filter @cansche/web build
 ```
 
-The output installers will be generated at:
-- **`.exe` (NSIS Installer)**: `apps/desktop/src-tauri/target/release/bundle/nsis/`
-- **`.msi` (Windows Installer)**: `apps/desktop/src-tauri/target/release/bundle/msi/`
+Build do aplicativo desktop:
 
----
+```bash
+pnpm --filter @cansche/desktop tauri build
+```
 
-## 7. Testing and Verification
-
-Unit and integration tests are powered by Vitest across all monorepo packages.
-
-To run the full automated test suite:
+Execute os testes automatizados:
 
 ```bash
 pnpm test
 ```
 
----
+Verifique a compilação Rust sem gerar um bundle:
 
-## 8. Data Exchange Format Specification (`.cansche.json`)
+```bash
+cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
+```
 
-Cansche specifies a standardized JSON schema for calendar and workspace serialization (`.cansche.json`).
+## Atualizações do aplicativo
 
-```typescript
-export interface CanscheFile {
-  format: 'cansche';
-  version: 1;
-  type: 'calendar' | 'workspace';
-  metadata: {
-    createdAt: string;
-    updatedAt: string;
-    appVersion: string;
-  };
-  data: Calendar | Workspace;
+O atualizador é exclusivo do aplicativo desktop. O Tauri gera artefatos assinados e o workflow de release publica esses artefatos junto com o `latest.json` no GitHub Releases.
+
+A configuração de atualização fica em `apps/desktop/src-tauri/tauri.conf.json` e inclui:
+
+- Artefatos de atualização assinados.
+- Chave pública usada para verificar os pacotes.
+- Endpoint do release mais recente do repositório.
+- Plugin Tauri de atualização e permissões necessárias para reiniciar o aplicativo.
+
+No aplicativo, a configuração de atualização automática controla somente a verificação periódica. A instalação de uma atualização continua sendo apresentada ao usuário para confirmação. A verificação manual permanece disponível mesmo quando a verificação automática está desativada.
+
+Para que um release seja publicado corretamente:
+
+1. Atualize a versão nos três arquivos controlados por `release:set-version`.
+2. Adicione uma seção não vazia para a versão em `CHANGELOG.md`.
+3. Sincronize o `Cargo.lock` com `cargo check --locked`.
+4. Execute a validação do release.
+5. Faça o commit e crie a tag no commit validado.
+6. Envie a branch e a tag para o repositório remoto.
+
+Exemplo:
+
+```bash
+pnpm run release:set-version -- 1.2.0
+cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
+pnpm run release:validate -- 1.2.0
+
+git tag -a v1.2.0 -m "Release v1.2.0"
+git push origin main
+git push origin v1.2.0
+```
+
+O workflow espera os secrets `TAURI_SIGNING_PRIVATE_KEY` e `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. A chave privada usada no workflow deve corresponder à chave pública versionada na configuração do Tauri.
+
+## Formato de dados
+
+As exportações usam arquivos JSON com extensão `.cansche.json`. O contrato `CanscheFile` inclui:
+
+```json
+{
+  "format": "cansche",
+  "version": 1,
+  "type": "calendar",
+  "metadata": {
+    "createdAt": "ISO-8601",
+    "updatedAt": "ISO-8601",
+    "appVersion": "1.2.0"
+  },
+  "data": {}
 }
 ```
 
----
+O campo `type` pode ser `calendar` ou `workspace`. O conteúdo de `data` depende do tipo exportado. Mudanças nesse contrato devem ser acompanhadas de testes de importação e exportação.
 
-## 9. Development & Architecture Guidelines
+## Princípios de desenvolvimento
 
-### 9.1 Pure Package Boundaries Rule
+- Manter as regras de negócio independentes da interface e da plataforma.
+- Encaminhar mudanças de estado pelo engine e pelos serviços da aplicação.
+- Preferir operações em lote a loops de edição na interface.
+- Manter adapters de plataforma atrás de contratos estáveis.
+- Cobrir mudanças no engine, na persistência e no atualizador com testes automatizados.
+- Registrar mudanças de comportamento em `CHANGELOG.md`.
+- Evitar introduzir integrações externas antes de estabilizar o núcleo local.
 
-To maintain strict architectural decoupling, packages inside `packages/` must remain **100% free of UI framework code (Vue)**:
+## Escopo atual
 
-- `packages/domain`: ❌ No Vue imports
-- `packages/engine`: ❌ No Vue imports
-- `packages/application`: ❌ No Vue imports (pure application I/O, backup, notification services)
-- `packages/repositories`: ❌ No Vue imports
-- `apps/web/src/services`: ✅ Reactive UI services (`CommandPaletteService`, `DragService`, `InspectorService`)
+Não fazem parte do escopo atual:
 
-### 9.2 Package Boundaries
+- Sincronização com Google Calendar, Outlook ou iCloud.
+- Colaboração multiusuário em tempo real.
+- Backend obrigatório ou dependência de conexão para uso local.
+- CLI, MCP ou sistema de plugins.
+- Presets de integração que acoplem o engine a um provedor externo.
 
-Dependency flow must remain strictly unidirectional:
+Esses itens podem ser avaliados depois que o engine, a persistência e o fluxo de release estiverem estáveis.
 
-```
-apps/web -> packages/api -> packages/engine -> packages/selection -> packages/domain -> packages/shared
-```
+## Contribuição
 
----
+Antes de abrir uma alteração:
 
-## 10. License
+1. Leia `ARCHITECTURE.md` e `CONTRIBUTING_AI.md`.
+2. Preserve as fronteiras entre interface, aplicação, domínio e plataforma.
+3. Execute os testes e as verificações relevantes.
+4. Atualize o changelog quando houver mudança observável para o usuário.
 
-This project is licensed under the Apache License 2.0. See the `LICENSE` file for details.
+## Licença
+
+Este projeto é distribuído sob a licença Apache 2.0. Consulte o arquivo [LICENSE](LICENSE).

@@ -9,6 +9,7 @@ export default defineConfig({
       '@cansche/selection': path.resolve(__dirname, './packages/selection/src/index.ts'),
       '@cansche/engine': path.resolve(__dirname, './packages/engine/src/index.ts'),
       '@cansche/api': path.resolve(__dirname, './packages/api/src/index.ts'),
+      '@cansche/platform': path.resolve(__dirname, './packages/platform/src/index.ts'),
       '@cansche/storage': path.resolve(__dirname, './packages/storage/src/index.ts'),
     },
   },
