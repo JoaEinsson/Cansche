@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag existente que deve ser publicada'
+        required: true
+        default: 'v1.2.0'
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -13,6 +20,8 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,24 +56,32 @@ jobs:
         run: pnpm install
 
       - name: Validate version, changelog and updater configuration
-        run: node scripts/release/validate.mjs ${{ github.ref_name }}
+        run: node scripts/release/validate.mjs ${{ env.RELEASE_TAG }}
 
       - name: Extract & Validate Release Notes from CHANGELOG.md
         id: changelog
-        run: node scripts/changelog/extract.mjs ${{ github.ref_name }}
+        run: node scripts/changelog/extract.mjs ${{ env.RELEASE_TAG }}
 
       - name: Generate Valid PNG Icons
         run: node apps/desktop/scripts/generate-valid-pngs.mjs
+
+      - name: Prepare updater signing key
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node -e "const fs=require('node:fs'); const os=require('node:os'); const path=require('node:path'); const key=process.env.TAURI_SIGNING_PRIVATE_KEY||''; if(!key.trim()){console.error('TAURI_SIGNING_PRIVATE_KEY is empty or unavailable'); process.exit(1)} const keyPath=path.join(process.env.RUNNER_TEMP,'cansche-tauri-signing.key'); fs.writeFileSync(keyPath,key,{encoding:'utf8'}); fs.appendFileSync(process.env.GITHUB_ENV,'TAURI_SIGNING_PRIVATE_KEY='+keyPath+os.EOL); console.log('Updater signing key received: '+key.length+' characters across '+key.split(String.fromCharCode(10)).length+' lines.')"
 
       - name: Build Tauri Desktop App & Create Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Cansche ${{ github.ref_name }} — Desktop Release'
+          tagName: ${{ env.RELEASE_TAG }}
+          releaseName: 'Cansche ${{ env.RELEASE_TAG }} — Desktop Release'
           releaseBody: ${{ steps.changelog.outputs.markdown }}
           releaseDraft: false
           prerelease: false
+
+      - name: Remove temporary updater signing key
+        if: always()
+        run: node -e "const fs=require('node:fs'); const path=require('node:path'); fs.rmSync(path.join(process.env.RUNNER_TEMP,'cansche-tauri-signing.key'),{force:true})"
