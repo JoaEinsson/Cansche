@@ -1,6 +1,6 @@
 [package]
 name = "cansche-desktop"
-version = "1.2.0"
+version = "1.2.1"
 description = "Cansche Desktop Calendar Editor"
 authors = ["Cansche Authors"]
 edition = "2021"

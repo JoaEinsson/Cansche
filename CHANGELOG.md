@@ -22,6 +22,19 @@ O projeto segue Semantic Versioning.
 
 ---
 
+## [1.2.1] - 2026-08-04
+
+### Fixed
+
+- Corrigida a renderização dos nomes dos dias na grade mensal.
+- Corrigidos os ícones das configurações, atualizações e controles da janela.
+
+### Changed
+
+- Substituída a barra de título nativa pela barra de título integrada do Cansche.
+
+---
+
 ## [1.2.0] - 2026-08-04
 
 ### Added

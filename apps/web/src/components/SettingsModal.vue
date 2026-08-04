@@ -161,6 +161,7 @@ import { UpdateInfo, UpdateStatus } from '@cansche/platform';
 import { AppSettings, DEFAULT_APP_SETTINGS } from '../services/AppSettingsService';
 import { ChangelogRelease } from '../services/ChangelogService';
 import IconRenderer from './IconRenderer.vue';
+import SettingRow from './SettingRow.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -249,18 +250,4 @@ function formatDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('pt-BR');
 }
-</script>
-
-<script lang="ts">
-export default {
-  components: {
-    SettingRow: {
-      props: {
-        title: { type: String, required: true },
-        description: { type: String, required: true },
-      },
-      template: '<div class="flex items-center justify-between gap-6 p-4 rounded-[8px] border border-[#23252a] bg-[#08090a]"><div><div class="text-xs font-medium text-white">{{ title }}</div><div class="text-[11px] text-[#8a8f98] mt-1">{{ description }}</div></div><div class="shrink-0"><slot /></div></div>',
-    },
-  },
-};
 </script>

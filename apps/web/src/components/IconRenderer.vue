@@ -217,6 +217,169 @@
     </svg>
 
     <svg
+      v-else-if="effectiveIconName === 'CalendarDays'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M8 14h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 18h.01" />
+      <path d="M12 18h.01" />
+      <path d="M16 18h.01" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'RefreshCw'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M21 12a9 9 0 0 0-15.3-6.4L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 15.3 6.4L21 16" />
+      <path d="M21 21v-5h-5" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Settings' || effectiveIconName === 'SlidersHorizontal'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <path v-if="effectiveIconName === 'Settings'" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+      <path v-if="effectiveIconName === 'Settings'" d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.41 1.41-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V19.6h-2v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.41-1.41.06-.06A1.7 1.7 0 0 0 9.4 15a1.7 1.7 0 0 0-1.56-1.03H7.75v-2h.09A1.7 1.7 0 0 0 9.4 10.94a1.7 1.7 0 0 0-.34-1.88L9 9l1.41-1.41.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 13.38 6.4V6.3h2v.1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.76 9l-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.92 12H21v2h-.08A1.7 1.7 0 0 0 19.4 15Z" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M21 4H3" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M21 12H3" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M21 20H3" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M14 4a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M6 12a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+      <path v-if="effectiveIconName === 'SlidersHorizontal'" d="M14 20a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Database'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <ellipse cx="12" cy="5" rx="8" ry="3" />
+      <path d="M4 5v7c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+      <path d="M4 12v7c0 1.66 3.58 3 8 3s8-1.34 8-3v-7" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Info'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Minus'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M5 12h14" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Maximize2'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <polyline points="15 3 21 3 21 9" />
+      <polyline points="9 21 3 21 3 15" />
+      <line x1="21" y1="3" x2="14" y2="10" />
+      <line x1="3" y1="21" x2="10" y2="14" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'Minimize2'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      :style="color ? { color } : undefined"
+    >
+      <polyline points="4 14 10 14 10 20" />
+      <polyline points="20 10 14 10 14 4" />
+      <line x1="14" y1="10" x2="21" y2="3" />
+      <line x1="3" y1="21" x2="10" y2="14" />
+    </svg>
+
+    <svg
+      v-else-if="effectiveIconName === 'X'"
+      :width="size"
+      :height="size"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      :style="color ? { color } : undefined"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+
+    <svg
       v-else-if="effectiveIconName === 'Bookmark'"
       :width="size"
       :height="size"
@@ -432,6 +595,12 @@ const knownLucideIcons = new Set([
   'Zap',
   'Clock',
   'Calendar',
+  'CalendarDays',
+  'RefreshCw',
+  'Settings',
+  'SlidersHorizontal',
+  'Database',
+  'Info',
   'Bookmark',
   'FileText',
   'CheckSquare',
@@ -441,6 +610,10 @@ const knownLucideIcons = new Set([
   'EyeOff',
   'Edit2',
   'Trash2',
+  'Minus',
+  'Maximize2',
+  'Minimize2',
+  'X',
 ]);
 
 const effectiveIconName = computed(() => {

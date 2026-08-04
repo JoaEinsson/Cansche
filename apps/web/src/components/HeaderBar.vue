@@ -1,5 +1,8 @@
 <template>
-  <header class="h-11 px-4 bg-[#08090a] border-b border-[#23252a] flex items-center justify-between shrink-0 select-none text-xs font-medium text-[#d0d6e0]">
+  <div class="shrink-0 select-none">
+    <WindowTitleBar />
+
+    <header class="h-11 px-4 bg-[#08090a] border-b border-[#23252a] flex items-center justify-between text-xs font-medium text-[#d0d6e0]">
     <!-- Left: Brand & Active Workspace -->
     <div class="flex items-center space-x-3">
       <div class="w-5 h-5 rounded-[4px] bg-white flex items-center justify-center font-bold text-[11px] text-[#08090a] tracking-tighter shadow-xs">
@@ -109,11 +112,13 @@
         <kbd class="text-[9px] font-mono text-[#62666d]">^Y</kbd>
       </button>
     </div>
-  </header>
+    </header>
+  </div>
 </template>
 
 <script setup lang="ts">
 import IconRenderer from './IconRenderer.vue';
+import WindowTitleBar from './WindowTitleBar.vue';
 
 defineProps<{
   currentMonthLabel: string;

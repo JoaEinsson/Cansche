@@ -8,10 +8,10 @@
     <div class="grid gap-1.5 mb-1.5 text-center shrink-0" :class="showWeekends ? 'grid-cols-7' : 'grid-cols-5'">
       <div
         v-for="dayName in daysOfWeek"
-        :key="dayName"
+        :key="dayName.day"
         class="font-mono text-[11px] font-medium text-[#8a8f98] uppercase tracking-wider py-1 border-b border-[#23252a]"
       >
-        {{ dayName }}
+        {{ dayName.label }}
       </div>
     </div>
 
