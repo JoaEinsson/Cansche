@@ -27,11 +27,25 @@ jobs:
         with:
           version: 9
 
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Run Workspace Build
-        run: pnpm build
+      - name: Build TypeScript packages
+        run: pnpm --filter @cansche/platform --filter @cansche/repositories --filter @cansche/application build
+
+      - name: Build web application
+        run: pnpm --filter @cansche/web build
+
+      - name: Check desktop Rust project
+        run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
 
       - name: Run Test Suite
         run: pnpm test
