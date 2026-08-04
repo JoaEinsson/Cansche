@@ -76,6 +76,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          projectPath: apps/desktop
+          tauriScript: pnpm tauri
           tagName: ${{ env.RELEASE_TAG }}
           releaseName: 'Cansche ${{ env.RELEASE_TAG }} — Desktop Release'
           releaseBody: ${{ steps.changelog.outputs.markdown }}
